@@ -1,0 +1,16 @@
+{
+  "name": "fotaza2-carrerasjuan",
+  "version": "1.0.0",
+  "description": "Aplicacion web comunitaria para compartir fotografias y videos.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "pug": "^3.0.3"
+  }
+}
