@@ -4,7 +4,8 @@
   "description": "Aplicacion web comunitaria para compartir fotografias y videos.",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "db:init": "node src/scripts/dbInit.js"
   },
   "keywords": [],
   "author": "",
