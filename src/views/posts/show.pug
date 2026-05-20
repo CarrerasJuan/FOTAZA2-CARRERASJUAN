@@ -28,6 +28,13 @@ html(lang="es")
                 | #{item.type} - #{item.url}
                 |  - Licencia: #{item.license}
 
+        if sessionUser && post.user && sessionUser.id === post.user.id
+          p
+            a(href=`/posts/${post.id}/edit`) Editar publicación
+
+          form(action=`/posts/${post.id}/delete` method="POST")
+            button(type="submit") Eliminar publicación
+
         p
           a(href="/posts") Volver al listado
     else

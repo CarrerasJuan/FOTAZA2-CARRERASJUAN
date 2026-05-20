@@ -1,0 +1,33 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= title
+  body
+    h1 Editar publicación
+
+    if error
+      p= error
+
+    form(action=`/posts/${post.id}/edit` method="POST")
+      div
+        label(for="title") Título
+        input#title(type="text" name="title" required value=values.title)
+
+      div
+        label(for="description") Descripción
+        textarea#description(name="description")= values.description
+
+      div
+        label(for="comments_enabled") Permitir comentarios
+        input#comments_enabled(
+          type="checkbox"
+          name="comments_enabled"
+          checked=values.comments_enabled
+        )
+
+      button(type="submit") Guardar cambios
+
+    p
+      a(href=`/posts/${post.id}`) Volver al detalle

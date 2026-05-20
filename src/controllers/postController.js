@@ -98,9 +98,111 @@ const create = async (req, res, next) => {
     }
 };
 
+const showEditForm = async (req, res, next) => {
+    try {
+        const post = await Post.findByPk(req.params.id);
+
+        if (!post) {
+            return res.status(404).render("posts/show", {
+                title: "Publicación no encontrada",
+                post: null
+            });
+        }
+
+        if (post.user_id !== req.session.user.id) {
+            return res.status(403).json({
+                message: "No tienes permisos para editar esta publicación."
+            });
+        }
+
+        return res.status(200).render("posts/edit", {
+            title: "Editar publicación",
+            error: null,
+            post,
+            values: {
+                title: post.title,
+                description: post.description || "",
+                comments_enabled: post.comments_enabled
+            }
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+
+const update = async (req, res, next) => {
+    const { title, description, comments_enabled } = req.body;
+
+    try {
+        const post = await Post.findByPk(req.params.id);
+
+        if (!post) {
+            return res.status(404).render("posts/show", {
+                title: "Publicación no encontrada",
+                post: null
+            });
+        }
+
+        if (post.user_id !== req.session.user.id) {
+            return res.status(403).json({
+                message: "No tienes permisos para editar esta publicación."
+            });
+        }
+
+        await post.update({
+            title,
+            description: description || null,
+            comments_enabled: comments_enabled === "on"
+        });
+
+        return res.redirect(`/posts/${post.id}`);
+    } catch (error) {
+        return res.status(400).render("posts/edit", {
+            title: "Editar publicación",
+            error: "No se pudo actualizar la publicación. Verificá los datos ingresados.",
+            post: {
+                id: req.params.id
+            },
+            values: {
+                title,
+                description,
+                comments_enabled: comments_enabled === "on"
+            }
+        });
+    }
+};
+
+const remove = async (req, res, next) => {
+    try {
+        const post = await Post.findByPk(req.params.id);
+
+        if (!post) {
+            return res.status(404).render("posts/show", {
+                title: "Publicación no encontrada",
+                post: null
+            });
+        }
+
+        if (post.user_id !== req.session.user.id) {
+            return res.status(403).json({
+                message: "No tienes permisos para eliminar esta publicación."
+            });
+        }
+
+        await post.destroy();
+
+        return res.redirect("/posts");
+    } catch (error) {
+        return next(error);
+    }
+};
+
 module.exports = {
     index,
     show,
     showCreateForm,
-    create
+    create,
+    showEditForm,
+    update,
+    remove
 };
