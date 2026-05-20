@@ -102,4 +102,4 @@ El proyecto incluye un esquema inicial de PostgreSQL ubicado en:
 
 `database/fotaza_schema.sql`
 
-Este archivo contiene la estructura relacional base de la aplicaciÃ³n, incluyendo usuarios, publicaciones, recursos multimedia, comentarios, valoraciones, seguimientos, reportes, intereses, colecciones, etiquetas y notificaciones.
+Este archivo contiene la estructura relacional base de la aplicación, incluyendo usuarios, publicaciones, recursos multimedia, comentarios, valoraciones, seguimientos, reportes, intereses, colecciones, etiquetas y notificaciones.
