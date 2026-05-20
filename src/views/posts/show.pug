@@ -27,6 +27,29 @@ html(lang="es")
               li
                 | #{item.type} - #{item.url}
                 |  - Licencia: #{item.license}
+                if item.type === "image"
+                  div
+                    img(src=item.url alt=post.title width="320")
+
+        if post.comments && post.comments.length
+          h2 Comentarios
+          ul
+            each comment in post.comments
+              li
+                strong= comment.user ? comment.user.username : "Usuario"
+                | : #{comment.content}
+        else
+          h2 Comentarios
+          p No hay comentarios registrados por el momento.
+
+        if sessionUser && post.comments_enabled
+          h3 Agregar comentario
+          form(action=`/posts/${post.id}/comments` method="POST")
+            div
+              label(for="content") Comentario
+              textarea#content(name="content" required)
+
+            button(type="submit") Publicar comentario
 
         if sessionUser && post.user && sessionUser.id === post.user.id
           p

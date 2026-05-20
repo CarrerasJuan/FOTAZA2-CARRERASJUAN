@@ -20,6 +20,10 @@ html(lang="es")
         textarea#description(name="description")= values.description
 
       div
+        label(for="media_url") URL de imagen
+        input#media_url(type="url" name="media_url" value=values.media_url)
+
+      div
         label(for="comments_enabled") Permitir comentarios
         input#comments_enabled(
           type="checkbox"

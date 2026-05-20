@@ -1,4 +1,4 @@
-const { Post, User, Media } = require("../models");
+const { Post, User, Media, Comment } = require("../models");
 
 const index = async (req, res, next) => {
     try {
@@ -40,8 +40,21 @@ const show = async (req, res, next) => {
                     model: Media,
                     as: "media",
                     attributes: ["id", "type", "url", "license", "watermark_text", "created_at"]
+                },
+                {
+                    model: Comment,
+                    as: "comments",
+                    attributes: ["id", "user_id", "content", "status", "created_at", "updated_at"],
+                    include: [
+                        {
+                            model: User,
+                            as: "user",
+                            attributes: ["id", "username", "avatar_url"]
+                        }
+                    ]
                 }
-            ]
+            ],
+            order: [[{ model: Comment, as: "comments" }, "created_at", "ASC"]]
         });
 
         if (!post) {
@@ -67,22 +80,39 @@ const showCreateForm = (req, res) => {
         values: {
             title: "",
             description: "",
-            comments_enabled: true
+            comments_enabled: true,
+            media_url: ""
         }
     });
 };
 
 const create = async (req, res, next) => {
-    const { title, description, comments_enabled } = req.body;
+    const { title, description, comments_enabled, media_url } = req.body;
 
     try {
+        const now = new Date();
+
         const post = await Post.create({
             user_id: req.session.user.id,
             title,
             description: description || null,
             comments_enabled: comments_enabled === "on",
-            status: "active"
+            status: "active",
+            created_at: now,
+            updated_at: now
         });
+
+        if (media_url && media_url.trim()) {
+            await Media.create({
+                post_id: post.id,
+                type: "image",
+                url: media_url.trim(),
+                license: "standard",
+                watermark_text: null
+                ,
+                created_at: now
+            });
+        }
 
         return res.redirect(`/posts/${post.id}`);
     } catch (error) {
@@ -92,7 +122,8 @@ const create = async (req, res, next) => {
             values: {
                 title,
                 description,
-                comments_enabled: comments_enabled === "on"
+                comments_enabled: comments_enabled === "on",
+                media_url
             }
         });
     }
@@ -100,7 +131,14 @@ const create = async (req, res, next) => {
 
 const showEditForm = async (req, res, next) => {
     try {
-        const post = await Post.findByPk(req.params.id);
+        const post = await Post.findByPk(req.params.id, {
+            include: [
+                {
+                    model: Media,
+                    as: "media"
+                }
+            ]
+        });
 
         if (!post) {
             return res.status(404).render("posts/show", {
@@ -119,22 +157,30 @@ const showEditForm = async (req, res, next) => {
             title: "Editar publicación",
             error: null,
             post,
-            values: {
-                title: post.title,
-                description: post.description || "",
-                comments_enabled: post.comments_enabled
-            }
-        });
+        values: {
+            title: post.title,
+            description: post.description || "",
+            comments_enabled: post.comments_enabled,
+            media_url: post.media && post.media.length ? post.media[0].url : ""
+        }
+    });
     } catch (error) {
         return next(error);
     }
 };
 
 const update = async (req, res, next) => {
-    const { title, description, comments_enabled } = req.body;
+    const { title, description, comments_enabled, media_url } = req.body;
 
     try {
-        const post = await Post.findByPk(req.params.id);
+        const post = await Post.findByPk(req.params.id, {
+            include: [
+                {
+                    model: Media,
+                    as: "media"
+                }
+            ]
+        });
 
         if (!post) {
             return res.status(404).render("posts/show", {
@@ -155,6 +201,29 @@ const update = async (req, res, next) => {
             comments_enabled: comments_enabled === "on"
         });
 
+        const currentMedia = post.media && post.media.length ? post.media[0] : null;
+        const trimmedMediaUrl = media_url ? media_url.trim() : "";
+
+        if (trimmedMediaUrl) {
+            if (currentMedia) {
+                await currentMedia.update({
+                    url: trimmedMediaUrl
+                });
+            } else {
+                const now = new Date();
+                await Media.create({
+                    post_id: post.id,
+                    type: "image",
+                    url: trimmedMediaUrl,
+                    license: "standard",
+                    watermark_text: null,
+                    created_at: now
+                });
+            }
+        } else if (currentMedia) {
+            await currentMedia.destroy();
+        }
+
         return res.redirect(`/posts/${post.id}`);
     } catch (error) {
         return res.status(400).render("posts/edit", {
@@ -166,7 +235,8 @@ const update = async (req, res, next) => {
             values: {
                 title,
                 description,
-                comments_enabled: comments_enabled === "on"
+                comments_enabled: comments_enabled === "on",
+                media_url
             }
         });
     }

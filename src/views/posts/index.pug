@@ -26,6 +26,10 @@ html(lang="es")
             h3 Recursos multimedia
             ul
               each item in post.media
-                li #{item.type} - #{item.url}
+                li
+                  | #{item.type} - #{item.url}
+                  if item.type === "image"
+                    div
+                      img(src=item.url alt=post.title width="240")
     else
       p No hay publicaciones registradas por el momento.
