@@ -95,3 +95,11 @@ Conclusión:
 
 El proyecto ya tiene una base técnica inicial ordenada y verificable.  
 Antes de avanzar con funcionalidades como autenticación, publicaciones o comentarios, se preparó correctamente el entorno, la configuración, la conexión a base de datos y el comando inicial de base requerido por la consigna.
+
+## Esquema de base de datos
+
+El proyecto incluye un esquema inicial de PostgreSQL ubicado en:
+
+`database/fotaza_schema.sql`
+
+Este archivo contiene la estructura relacional base de la aplicaciÃ³n, incluyendo usuarios, publicaciones, recursos multimedia, comentarios, valoraciones, seguimientos, reportes, intereses, colecciones, etiquetas y notificaciones.
