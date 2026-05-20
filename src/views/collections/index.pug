@@ -1,0 +1,24 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= title
+  body
+    h1 Mis colecciones
+
+    p
+      a(href="/collections/create") Crear colección
+
+    if collections.length
+      each collection in collections
+        article
+          h2= collection.name
+          p Elementos guardados: #{collection.items ? collection.items.length : 0}
+          p
+            a(href=`/collections/${collection.id}`) Ver colección
+    else
+      p Todavía no tienes colecciones creadas.
+
+    p
+      a(href="/posts") Volver a publicaciones

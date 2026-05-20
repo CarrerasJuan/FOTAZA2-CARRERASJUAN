@@ -19,6 +19,8 @@ html(lang="es")
         p Estado: #{post.status}
         p Comentarios habilitados: #{post.comments_enabled ? "Sí" : "No"}
         p Fecha de creación: #{post.created_at}
+        p
+          a(href=`/users/${post.user_id}`) Ver perfil del autor
         p Valoraciones registradas: #{ratingSummary && ratingSummary.total ? ratingSummary.total : 0}
         p Promedio de valoración: #{ratingSummary && ratingSummary.average ? ratingSummary.average : "Sin valoraciones"}
         p Denuncias registradas: #{typeof totalReports === "number" ? totalReports : 0}
@@ -46,6 +48,22 @@ html(lang="es")
           p No hay comentarios registrados por el momento.
 
         if sessionUser
+          if userCollections && userCollections.length
+            h2 Guardar en colección
+            form(action=`/collections/${userCollections[0].id}/items` method="POST")
+              div
+                label(for="collection_id") Colección
+                select#collection_id(name="collection_id" onchange="this.form.action='/collections/' + this.value + '/items'")
+                  each collection in userCollections
+                    option(value=collection.id)= collection.name
+              input(type="hidden" name="post_id" value=post.id)
+              button(type="submit") Agregar a colección
+          else
+            h2 Guardar en colección
+            p No tienes colecciones creadas todavía.
+            p
+              a(href="/collections/create") Crear primera colección
+
           h2 Valoración
           if ratingSummary && ratingSummary.currentUserRating
             p Tu valoración actual: #{ratingSummary.currentUserRating.points} / 5

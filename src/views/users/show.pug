@@ -1,0 +1,42 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= title
+  body
+    if profileUser
+      h1= profileUser.username
+      p Correo: #{profileUser.email}
+      p Estado: #{profileUser.status}
+      p Miembro desde: #{profileUser.created_at}
+
+      if profileUser.biography
+        p= profileUser.biography
+
+      if profileUser.avatar_url
+        img(src=profileUser.avatar_url alt=profileUser.username width="180")
+
+      h2 Publicaciones del usuario
+      if profileUser.posts && profileUser.posts.length
+        each post in profileUser.posts
+          article
+            h3= post.title
+            if post.description
+              p= post.description
+            p
+              a(href=`/posts/${post.id}`) Ver publicación
+            if post.media && post.media.length
+              each item in post.media
+                if item.type === "image"
+                  img(src=item.url alt=post.title width="220")
+      else
+        p Este usuario todavía no tiene publicaciones registradas.
+
+      p
+        a(href="/posts") Volver a publicaciones
+    else
+      h1 Usuario no encontrado
+      p No existe un usuario registrado con el identificador solicitado.
+      p
+        a(href="/posts") Volver a publicaciones

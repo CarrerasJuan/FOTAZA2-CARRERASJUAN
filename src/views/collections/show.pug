@@ -1,0 +1,36 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= title
+  body
+    if collection
+      h1= collection.name
+      p Propietario: #{collection.user ? collection.user.username : "Usuario"}
+
+      h2 Publicaciones guardadas
+      if collection.items && collection.items.length
+        each item in collection.items
+          if item.post
+            article
+              h3= item.post.title
+              p Autor: #{item.post.user ? item.post.user.username : "Sin usuario"}
+              if item.post.description
+                p= item.post.description
+              p
+                a(href=`/posts/${item.post.id}`) Ver publicación
+              if item.post.media && item.post.media.length
+                each mediaItem in item.post.media
+                  if mediaItem.type === "image"
+                    img(src=mediaItem.url alt=item.post.title width="220")
+      else
+        p Esta colección todavía no tiene publicaciones guardadas.
+
+      p
+        a(href="/collections") Volver a colecciones
+    else
+      h1 Colección no encontrada
+      p No existe una colección registrada con el identificador solicitado.
+      p
+        a(href="/collections") Volver a colecciones

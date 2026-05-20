@@ -1,4 +1,4 @@
-const { Post, User, Media, Comment, Rating, Report } = require("../models");
+const { Post, User, Media, Comment, Rating, Report, Collection } = require("../models");
 
 const parsePostId = (value) => {
     const parsedId = Number.parseInt(value, 10);
@@ -110,6 +110,16 @@ const show = async (req, res, next) => {
             : null;
         const totalReports = post.reports ? post.reports.length : 0;
 
+        const userCollections = req.session?.user
+            ? await Collection.findAll({
+                where: {
+                    user_id: req.session.user.id
+                },
+                attributes: ["id", "name"],
+                order: [["name", "ASC"]]
+            })
+            : [];
+
         return res.status(200).render("posts/show", {
             title: post.title,
             post,
@@ -118,7 +128,8 @@ const show = async (req, res, next) => {
                 average: ratingAverage,
                 currentUserRating
             },
-            totalReports
+            totalReports,
+            userCollections
         });
     } catch (error) {
         return next(error);
