@@ -7,3 +7,8 @@ html(lang="es")
   body
     h1 Fotaza
     p Plataforma comunitaria de fotografias y videos
+    p
+      a(href="/posts") Ver publicaciones
+    if sessionUser
+      p
+        a(href="/notifications") Ver notificaciones

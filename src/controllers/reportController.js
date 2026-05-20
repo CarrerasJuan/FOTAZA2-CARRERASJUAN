@@ -1,4 +1,4 @@
-const { Post, Report } = require("../models");
+const { Post, Report, Notification, NotificationReport } = require("../models");
 
 const parsePostId = (value) => {
     const parsedId = Number.parseInt(value, 10);
@@ -31,7 +31,7 @@ const reportPost = async (req, res, next) => {
             return res.status(400).redirect(`/posts/${post.id}`);
         }
 
-        await Report.create({
+        const report = await Report.create({
             reporter_id: req.session.user.id,
             reported_user_id: post.user_id,
             post_id: post.id,
@@ -40,6 +40,21 @@ const reportPost = async (req, res, next) => {
             description: description || null,
             status: "pending"
         });
+
+        if (post.user_id && post.user_id !== req.session.user.id) {
+            const notification = await Notification.create({
+                user_id: post.user_id,
+                actor_id: req.session.user.id,
+                type: "report",
+                is_read: false,
+                created_at: new Date()
+            });
+
+            await NotificationReport.create({
+                notification_id: notification.id,
+                report_id: report.id
+            });
+        }
 
         return res.redirect(`/posts/${post.id}`);
     } catch (error) {

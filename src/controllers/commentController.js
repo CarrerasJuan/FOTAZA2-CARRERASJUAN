@@ -1,4 +1,4 @@
-const { Post, Comment } = require("../models");
+const { Post, Comment, Notification, NotificationComment } = require("../models");
 
 const parsePostId = (value) => {
     const parsedId = Number.parseInt(value, 10);
@@ -35,7 +35,7 @@ const create = async (req, res, next) => {
 
         const now = new Date();
 
-        await Comment.create({
+        const comment = await Comment.create({
             post_id: post.id,
             user_id: req.session.user.id,
             content,
@@ -44,6 +44,21 @@ const create = async (req, res, next) => {
             created_at: now,
             updated_at: now
         });
+
+        if (post.user_id !== req.session.user.id) {
+            const notification = await Notification.create({
+                user_id: post.user_id,
+                actor_id: req.session.user.id,
+                type: "comment",
+                is_read: false,
+                created_at: now
+            });
+
+            await NotificationComment.create({
+                notification_id: notification.id,
+                comment_id: comment.id
+            });
+        }
 
         return res.redirect(`/posts/${post.id}`);
     } catch (error) {

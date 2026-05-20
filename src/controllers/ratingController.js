@@ -1,4 +1,4 @@
-const { Post, Rating } = require("../models");
+const { Post, Rating, Notification, NotificationRating } = require("../models");
 
 const parsePostId = (value) => {
     const parsedId = Number.parseInt(value, 10);
@@ -47,6 +47,19 @@ const ratePost = async (req, res, next) => {
         if (!created) {
             await rating.update({
                 points: parsedPoints
+            });
+        } else if (post.user_id !== req.session.user.id) {
+            const notification = await Notification.create({
+                user_id: post.user_id,
+                actor_id: req.session.user.id,
+                type: "rating",
+                is_read: false,
+                created_at: now
+            });
+
+            await NotificationRating.create({
+                notification_id: notification.id,
+                rating_id: rating.id
             });
         }
 

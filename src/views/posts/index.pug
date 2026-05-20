@@ -6,6 +6,9 @@ html(lang="es")
     title= title
   body
     h1 Publicaciones
+    if sessionUser
+      p
+        a(href="/notifications") Ver notificaciones
 
     if posts.length
       each post in posts

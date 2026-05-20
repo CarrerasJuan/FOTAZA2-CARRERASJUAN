@@ -1,0 +1,47 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= title
+  body
+    h1 Notificaciones
+
+    if notifications.length
+      each notification in notifications
+        article
+          h2= notification.type
+          p Estado: #{notification.is_read ? "Leída" : "No leída"}
+          p Fecha: #{notification.created_at}
+          if notification.actor
+            p Usuario relacionado: #{notification.actor.username}
+
+          if notification.type === "comment" && notification.notificationComment && notification.notificationComment.comment
+            p Comentario: #{notification.notificationComment.comment.content}
+            p
+              a(href=`/posts/${notification.notificationComment.comment.post_id}`) Ver publicación
+
+          if notification.type === "rating" && notification.notificationRating && notification.notificationRating.rating
+            p Puntaje: #{notification.notificationRating.rating.points}
+            p
+              a(href=`/posts/${notification.notificationRating.rating.post_id}`) Ver publicación
+
+          if notification.type === "follow" && notification.notificationFollow && notification.notificationFollow.follower
+            p Nuevo seguidor: #{notification.notificationFollow.follower.username}
+            p
+              a(href=`/users/${notification.notificationFollow.follower.id}`) Ver perfil
+
+          if notification.type === "report" && notification.notificationReport && notification.notificationReport.report
+            p Motivo: #{notification.notificationReport.report.reason}
+            if notification.notificationReport.report.post_id
+              p
+                a(href=`/posts/${notification.notificationReport.report.post_id}`) Ver publicación
+
+          unless notification.is_read
+            form(action=`/notifications/${notification.id}/read` method="POST")
+              button(type="submit") Marcar como leída
+    else
+      p No tienes notificaciones registradas por el momento.
+
+    p
+      a(href="/posts") Volver a publicaciones
