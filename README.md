@@ -1,105 +1,107 @@
 # Fotaza
 
-Aplicacion web comunitaria para compartir fotografias y videos.
+Aplicación web comunitaria para compartir fotografías y videos.
 
-17/05/2026 - 01:30 AM
+## Descripción general
 
-Resumen técnico del avance actual — FOTAZA2-CARRERASJUAN
+FOTAZA2 es una aplicación web construida con Node.js, Express, PUG y PostgreSQL.  
+En esta etapa del proyecto se trabajó sobre la base técnica del backend, organizando la estructura general y dejando preparados los componentes principales para avanzar más adelante con funcionalidades concretas.
 
-Hasta este punto, el proyecto se construyó de forma progresiva mediante commits pequeños y controlados, evitando implementar funcionalidades antes de tener una base técnica estable.
+## Tecnologías utilizadas
 
-Avances realizados:
+- Node.js
+- Express
+- PUG
+- PostgreSQL
+- Sequelize
+- dotenv
 
-1. Inicializa estructura base del proyecto
+## Estado actual del proyecto
 
-Se creó la estructura inicial de una aplicación Node.js con Express y PUG, siguiendo una organización MVC simple.  
-El servidor quedó funcionando en localhost:3000 y renderizando una vista inicial mediante PUG.
+Hasta este punto, el proyecto cuenta con una base funcional y ordenada para continuar el desarrollo.  
+La aplicación ya puede levantar correctamente, conectarse con PostgreSQL y cargar la estructura principal del backend sin errores.
 
-Resultado:
-- Express funcionando.
-- PUG configurado.
-- Vista inicial renderizada.
-- Estructura base creada.
-- Proyecto ejecutable con npm start.
+Actualmente se encuentra implementado:
 
-2. Configura variables de entorno iniciales
+- estructura inicial del proyecto con organización tipo MVC
+- servidor Express funcionando en `http://localhost:3000`
+- vista inicial renderizada con PUG
+- configuración de variables de entorno con `dotenv`
+- archivo `.env.example` como referencia de configuración
+- conexión inicial a PostgreSQL verificada con Sequelize
+- script `npm run db:init` para validar la conexión a la base
+- modelos Sequelize definidos a partir del esquema SQL del proyecto
+- asociaciones entre modelos verificadas correctamente
+- middlewares base para sesión, control de acceso y manejo de errores
+- rutas base organizadas por módulo
+- controladores base creados y conectados con sus rutas
+- integración mínima en `app.js` para responder rutas básicas y un endpoint de verificación
 
-Se incorporó dotenv para manejar configuración mediante variables de entorno.  
-El puerto de la aplicación se lee desde process.env.PORT, usando 3000 como valor por defecto.  
-También se creó .env.example como guía de configuración, sin incluir credenciales reales.
+## Modelos implementados
 
-Resultado:
-- dotenv instalado.
-- PORT configurable.
-- .env.example creado.
-- .env ignorado por Git.
-- Sin credenciales reales en el repositorio.
+Se encuentran definidos los siguientes modelos Sequelize:
 
-3. Configura Sequelize con PostgreSQL
+- User
+- Post
+- Media
+- Comment
+- Rating
+- Report
+- Follow
+- Notification
+- Interest
+- Collection
+- CollectionItem
+- Tag
+- PostTag
+- NotificationComment
+- NotificationRating
+- NotificationFollow
+- NotificationInterest
+- NotificationReport
 
-Se instalaron las dependencias necesarias para usar PostgreSQL con Sequelize:
+## Scripts disponibles
 
-- sequelize
-- pg
-- pg-hstore
-- sequelize-cli como dependencia de desarrollo
+- `npm start`
+  - levanta el servidor en el puerto configurado
 
-También se creó src/config/database.js con una configuración mínima de Sequelize usando variables de entorno.
+- `npm run db:init`
+  - verifica la conexión inicial con PostgreSQL
 
-Resultado:
-- Sequelize instalado.
-- PostgreSQL definido como motor de base de datos.
-- Configuración centralizada en src/config/database.js.
-- Sin modelos, migraciones ni tablas todavía.
+- `npm run db:models`
+  - valida la carga de los modelos Sequelize y sus asociaciones
 
-4. Verifica conexión inicial con PostgreSQL
+## Estructura principal
 
-Se agregó una verificación de conexión usando sequelize.authenticate().  
-La aplicación puede comprobar si logra conectarse correctamente a la base PostgreSQL local.
+```text
+src/
+  app.js
+  server.js
+  config/
+  controllers/
+  middlewares/
+  models/
+  routes/
+  scripts/
+  views/
 
-Resultado:
-- Conexión a PostgreSQL verificada.
-- Mensajes claros en consola.
-- Sin sequelize.sync().
-- Sin creación automática de tablas.
-- Sin modelos todavía.
+public/
+  css/
+  js/
+  img/
+```
 
-5. Agrega script inicial de base de datos
+## Base de datos
 
-Se agregó el comando:
-
-npm run db:init
-
-Este comando ejecuta un script inicial ubicado en src/scripts/dbInit.js.  
-Por ahora, el script verifica la conexión con PostgreSQL usando la instancia de Sequelize existente y finaliza correctamente.
-
-Resultado:
-- npm run db:init existe y funciona.
-- El script conecta correctamente con PostgreSQL.
-- No crea tablas todavía.
-- No ejecuta migraciones todavía.
-- No carga seeders todavía.
-- Deja preparado el mecanismo inicial exigido por la consigna.
-
-Estado técnico actual:
-
-- Express + PUG funcionando.
-- Variables de entorno configuradas.
-- PostgreSQL local creado.
-- Sequelize configurado.
-- Conexión a PostgreSQL verificada.
-- npm run db:init existe y funciona.
-- Todavía no hay tablas, modelos, migraciones ni seeders.
-
-Conclusión:
-
-El proyecto ya tiene una base técnica inicial ordenada y verificable.  
-Antes de avanzar con funcionalidades como autenticación, publicaciones o comentarios, se preparó correctamente el entorno, la configuración, la conexión a base de datos y el comando inicial de base requerido por la consigna.
-
-## Esquema de base de datos
-
-El proyecto incluye un esquema inicial de PostgreSQL ubicado en:
+El proyecto incluye un esquema SQL base en:
 
 `database/fotaza_schema.sql`
 
-Este archivo contiene la estructura relacional base de la aplicación, incluyendo usuarios, publicaciones, recursos multimedia, comentarios, valoraciones, seguimientos, reportes, intereses, colecciones, etiquetas y notificaciones.
+Ese archivo define la estructura relacional general de la aplicación y fue tomado como referencia para la implementación de los modelos Sequelize.
+
+## Alcance de esta etapa
+
+En esta instancia se trabajó únicamente sobre la base técnica del proyecto.  
+Todavía no se desarrollaron funcionalidades completas de negocio, formularios finales, autenticación, CRUDs ni flujos de uso avanzados.
+
+La intención fue dejar una estructura consistente, verificable y lista para continuar con las siguientes etapas del desarrollo.
