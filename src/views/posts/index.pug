@@ -18,6 +18,7 @@ html(lang="es")
 
           p Estado: #{post.status}
           p Comentarios habilitados: #{post.comments_enabled ? "Sí" : "No"}
+          p Valoraciones: #{post.ratings && post.ratings.length ? post.ratings.length : 0}
 
           p
             a(href=`/posts/${post.id}`) Ver detalle

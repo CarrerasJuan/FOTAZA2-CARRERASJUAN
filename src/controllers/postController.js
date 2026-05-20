@@ -1,4 +1,4 @@
-const { Post, User, Media, Comment } = require("../models");
+const { Post, User, Media, Comment, Rating, Report } = require("../models");
 
 const parsePostId = (value) => {
     const parsedId = Number.parseInt(value, 10);
@@ -18,6 +18,11 @@ const index = async (req, res, next) => {
                     model: Media,
                     as: "media",
                     attributes: ["id", "type", "url", "license", "watermark_text", "created_at"]
+                },
+                {
+                    model: Rating,
+                    as: "ratings",
+                    attributes: ["id", "user_id", "points"]
                 }
             ],
             order: [["created_at", "DESC"]]
@@ -66,6 +71,23 @@ const show = async (req, res, next) => {
                             attributes: ["id", "username", "avatar_url"]
                         }
                     ]
+                },
+                {
+                    model: Rating,
+                    as: "ratings",
+                    attributes: ["id", "user_id", "points", "created_at"],
+                    include: [
+                        {
+                            model: User,
+                            as: "user",
+                            attributes: ["id", "username", "avatar_url"]
+                        }
+                    ]
+                },
+                {
+                    model: Report,
+                    as: "reports",
+                    attributes: ["id", "reporter_id", "reason", "status", "created_at"]
                 }
             ],
             order: [[{ model: Comment, as: "comments" }, "created_at", "ASC"]]
@@ -78,9 +100,25 @@ const show = async (req, res, next) => {
             });
         }
 
+        const ratings = post.ratings || [];
+        const totalRatings = ratings.length;
+        const ratingAverage = totalRatings
+            ? (ratings.reduce((sum, rating) => sum + rating.points, 0) / totalRatings).toFixed(1)
+            : null;
+        const currentUserRating = req.session?.user
+            ? ratings.find((rating) => rating.user_id === req.session.user.id) || null
+            : null;
+        const totalReports = post.reports ? post.reports.length : 0;
+
         return res.status(200).render("posts/show", {
             title: post.title,
-            post
+            post,
+            ratingSummary: {
+                total: totalRatings,
+                average: ratingAverage,
+                currentUserRating
+            },
+            totalReports
         });
     } catch (error) {
         return next(error);

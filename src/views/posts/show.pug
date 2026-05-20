@@ -19,6 +19,9 @@ html(lang="es")
         p Estado: #{post.status}
         p Comentarios habilitados: #{post.comments_enabled ? "Sí" : "No"}
         p Fecha de creación: #{post.created_at}
+        p Valoraciones registradas: #{ratingSummary && ratingSummary.total ? ratingSummary.total : 0}
+        p Promedio de valoración: #{ratingSummary && ratingSummary.average ? ratingSummary.average : "Sin valoraciones"}
+        p Denuncias registradas: #{typeof totalReports === "number" ? totalReports : 0}
 
         if post.media && post.media.length
           h2 Recursos multimedia
@@ -41,6 +44,37 @@ html(lang="es")
         else
           h2 Comentarios
           p No hay comentarios registrados por el momento.
+
+        if sessionUser
+          h2 Valoración
+          if ratingSummary && ratingSummary.currentUserRating
+            p Tu valoración actual: #{ratingSummary.currentUserRating.points} / 5
+          else
+            p Todavía no valoraste esta publicación.
+
+          form(action=`/posts/${post.id}/ratings` method="POST")
+            div
+              label(for="points") Puntaje
+              select#points(name="points" required)
+                option(value="1" selected=ratingSummary && ratingSummary.currentUserRating && ratingSummary.currentUserRating.points === 1) 1
+                option(value="2" selected=ratingSummary && ratingSummary.currentUserRating && ratingSummary.currentUserRating.points === 2) 2
+                option(value="3" selected=ratingSummary && ratingSummary.currentUserRating && ratingSummary.currentUserRating.points === 3) 3
+                option(value="4" selected=ratingSummary && ratingSummary.currentUserRating && ratingSummary.currentUserRating.points === 4) 4
+                option(value="5" selected=ratingSummary && ratingSummary.currentUserRating && ratingSummary.currentUserRating.points === 5) 5
+
+            button(type="submit") Guardar valoración
+
+          h2 Denunciar publicación
+          form(action=`/posts/${post.id}/reports` method="POST")
+            div
+              label(for="reason") Motivo
+              input#reason(type="text" name="reason" maxlength="100" required)
+
+            div
+              label(for="description") Descripción
+              textarea#description(name="description")
+
+            button(type="submit") Enviar denuncia
 
         if sessionUser && post.comments_enabled
           h3 Agregar comentario
