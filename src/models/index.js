@@ -12,6 +12,11 @@ const { Collection, initializeCollection } = require("./Collection");
 const { CollectionItem, initializeCollectionItem } = require("./CollectionItem");
 const { Tag, initializeTag } = require("./Tag");
 const { PostTag, initializePostTag } = require("./PostTag");
+const { NotificationComment, initializeNotificationComment } = require("./NotificationComment");
+const { NotificationRating, initializeNotificationRating } = require("./NotificationRating");
+const { NotificationFollow, initializeNotificationFollow } = require("./NotificationFollow");
+const { NotificationInterest, initializeNotificationInterest } = require("./NotificationInterest");
+const { NotificationReport, initializeNotificationReport } = require("./NotificationReport");
 
 const initializeModels = () => {
     if (!User.sequelize) {
@@ -64,6 +69,26 @@ const initializeModels = () => {
 
     if (!PostTag.sequelize) {
         initializePostTag(sequelize);
+    }
+
+    if (!NotificationComment.sequelize) {
+        initializeNotificationComment(sequelize);
+    }
+
+    if (!NotificationRating.sequelize) {
+        initializeNotificationRating(sequelize);
+    }
+
+    if (!NotificationFollow.sequelize) {
+        initializeNotificationFollow(sequelize);
+    }
+
+    if (!NotificationInterest.sequelize) {
+        initializeNotificationInterest(sequelize);
+    }
+
+    if (!NotificationReport.sequelize) {
+        initializeNotificationReport(sequelize);
     }
 
     User.hasMany(Post, {
@@ -290,6 +315,106 @@ const initializeModels = () => {
         as: "tag"
     });
 
+    Notification.hasOne(NotificationComment, {
+        foreignKey: "notification_id",
+        as: "notificationComment"
+    });
+
+    NotificationComment.belongsTo(Notification, {
+        foreignKey: "notification_id",
+        as: "notification"
+    });
+
+    Comment.hasMany(NotificationComment, {
+        foreignKey: "comment_id",
+        as: "notificationComments"
+    });
+
+    NotificationComment.belongsTo(Comment, {
+        foreignKey: "comment_id",
+        as: "comment"
+    });
+
+    Notification.hasOne(NotificationRating, {
+        foreignKey: "notification_id",
+        as: "notificationRating"
+    });
+
+    NotificationRating.belongsTo(Notification, {
+        foreignKey: "notification_id",
+        as: "notification"
+    });
+
+    Rating.hasMany(NotificationRating, {
+        foreignKey: "rating_id",
+        as: "notificationRatings"
+    });
+
+    NotificationRating.belongsTo(Rating, {
+        foreignKey: "rating_id",
+        as: "rating"
+    });
+
+    Notification.hasOne(NotificationFollow, {
+        foreignKey: "notification_id",
+        as: "notificationFollow"
+    });
+
+    NotificationFollow.belongsTo(Notification, {
+        foreignKey: "notification_id",
+        as: "notification"
+    });
+
+    User.hasMany(NotificationFollow, {
+        foreignKey: "follower_id",
+        as: "notificationFollows"
+    });
+
+    NotificationFollow.belongsTo(User, {
+        foreignKey: "follower_id",
+        as: "follower"
+    });
+
+    Notification.hasOne(NotificationInterest, {
+        foreignKey: "notification_id",
+        as: "notificationInterest"
+    });
+
+    NotificationInterest.belongsTo(Notification, {
+        foreignKey: "notification_id",
+        as: "notification"
+    });
+
+    Interest.hasMany(NotificationInterest, {
+        foreignKey: "interest_id",
+        as: "notificationInterests"
+    });
+
+    NotificationInterest.belongsTo(Interest, {
+        foreignKey: "interest_id",
+        as: "interest"
+    });
+
+    Notification.hasOne(NotificationReport, {
+        foreignKey: "notification_id",
+        as: "notificationReport"
+    });
+
+    NotificationReport.belongsTo(Notification, {
+        foreignKey: "notification_id",
+        as: "notification"
+    });
+
+    Report.hasMany(NotificationReport, {
+        foreignKey: "report_id",
+        as: "notificationReports"
+    });
+
+    NotificationReport.belongsTo(Report, {
+        foreignKey: "report_id",
+        as: "report"
+    });
+
     return {
         sequelize,
         User,
@@ -304,7 +429,12 @@ const initializeModels = () => {
         Collection,
         CollectionItem,
         Tag,
-        PostTag
+        PostTag,
+        NotificationComment,
+        NotificationRating,
+        NotificationFollow,
+        NotificationInterest,
+        NotificationReport
     };
 };
 
