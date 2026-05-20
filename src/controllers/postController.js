@@ -1,8 +1,74 @@
-const { Post, User, Media, Comment, Rating, Report, Collection, Interest } = require("../models");
+const { Op } = require("sequelize");
+const { Post, User, Media, Comment, Rating, Report, Collection, Interest, Tag, PostTag } = require("../models");
 
 const parsePostId = (value) => {
     const parsedId = Number.parseInt(value, 10);
     return Number.isInteger(parsedId) && parsedId > 0 ? parsedId : null;
+};
+
+const parseTagId = (value) => {
+    const parsedId = Number.parseInt(value, 10);
+    return Number.isInteger(parsedId) && parsedId > 0 ? parsedId : null;
+};
+
+const normalizeTagNames = (rawTags) => {
+    if (!rawTags) {
+        return [];
+    }
+
+    const uniqueTags = new Map();
+
+    rawTags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+        .forEach((tag) => {
+            const normalizedKey = tag.toLowerCase();
+
+            if (!uniqueTags.has(normalizedKey)) {
+                uniqueTags.set(normalizedKey, tag);
+            }
+        });
+
+    return Array.from(uniqueTags.values());
+};
+
+const syncPostTags = async (postId, rawTags) => {
+    const tagNames = normalizeTagNames(rawTags);
+
+    await PostTag.destroy({
+        where: {
+            post_id: postId
+        }
+    });
+
+    for (const tagName of tagNames) {
+        let tag = await Tag.findOne({
+            where: {
+                name: {
+                    [Op.iLike]: tagName
+                }
+            }
+        });
+
+        if (!tag) {
+            tag = await Tag.create({
+                name: tagName,
+                created_at: new Date()
+            });
+        }
+
+        await PostTag.findOrCreate({
+            where: {
+                post_id: postId,
+                tag_id: tag.id
+            },
+            defaults: {
+                post_id: postId,
+                tag_id: tag.id
+            }
+        });
+    }
 };
 
 const index = async (req, res, next) => {
@@ -23,6 +89,14 @@ const index = async (req, res, next) => {
                     model: Rating,
                     as: "ratings",
                     attributes: ["id", "user_id", "points"]
+                },
+                {
+                    model: Tag,
+                    as: "tags",
+                    attributes: ["id", "name"],
+                    through: {
+                        attributes: []
+                    }
                 }
             ],
             order: [["created_at", "DESC"]]
@@ -30,7 +104,8 @@ const index = async (req, res, next) => {
 
         return res.status(200).render("posts/index", {
             title: "Publicaciones",
-            posts
+            posts,
+            currentTag: null
         });
     } catch (error) {
         return next(error);
@@ -88,6 +163,14 @@ const show = async (req, res, next) => {
                     model: Report,
                     as: "reports",
                     attributes: ["id", "reporter_id", "reason", "status", "created_at"]
+                },
+                {
+                    model: Tag,
+                    as: "tags",
+                    attributes: ["id", "name"],
+                    through: {
+                        attributes: []
+                    }
                 }
             ],
             order: [[{ model: Comment, as: "comments" }, "created_at", "ASC"]]
@@ -154,13 +237,14 @@ const showCreateForm = (req, res) => {
             title: "",
             description: "",
             comments_enabled: true,
-            media_url: ""
+            media_url: "",
+            tags: ""
         }
     });
 };
 
 const create = async (req, res, next) => {
-    const { title, description, comments_enabled, media_url } = req.body;
+    const { title, description, comments_enabled, media_url, tags } = req.body;
 
     try {
         const now = new Date();
@@ -187,6 +271,8 @@ const create = async (req, res, next) => {
             });
         }
 
+        await syncPostTags(post.id, tags);
+
         return res.redirect(`/posts/${post.id}`);
     } catch (error) {
         return res.status(400).render("posts/create", {
@@ -196,7 +282,8 @@ const create = async (req, res, next) => {
                 title,
                 description,
                 comments_enabled: comments_enabled === "on",
-                media_url
+                media_url,
+                tags
             }
         });
     }
@@ -218,6 +305,14 @@ const showEditForm = async (req, res, next) => {
                 {
                     model: Media,
                     as: "media"
+                },
+                {
+                    model: Tag,
+                    as: "tags",
+                    attributes: ["id", "name"],
+                    through: {
+                        attributes: []
+                    }
                 }
             ]
         });
@@ -243,7 +338,8 @@ const showEditForm = async (req, res, next) => {
             title: post.title,
             description: post.description || "",
             comments_enabled: post.comments_enabled,
-            media_url: post.media && post.media.length ? post.media[0].url : ""
+            media_url: post.media && post.media.length ? post.media[0].url : "",
+            tags: post.tags && post.tags.length ? post.tags.map((tag) => tag.name).join(", ") : ""
         }
     });
     } catch (error) {
@@ -252,7 +348,7 @@ const showEditForm = async (req, res, next) => {
 };
 
 const update = async (req, res, next) => {
-    const { title, description, comments_enabled, media_url } = req.body;
+    const { title, description, comments_enabled, media_url, tags } = req.body;
 
     try {
         const postId = parsePostId(req.params.id);
@@ -269,6 +365,14 @@ const update = async (req, res, next) => {
                 {
                     model: Media,
                     as: "media"
+                },
+                {
+                    model: Tag,
+                    as: "tags",
+                    attributes: ["id", "name"],
+                    through: {
+                        attributes: []
+                    }
                 }
             ]
         });
@@ -315,6 +419,8 @@ const update = async (req, res, next) => {
             await currentMedia.destroy();
         }
 
+        await syncPostTags(post.id, tags);
+
         return res.redirect(`/posts/${post.id}`);
     } catch (error) {
         return res.status(400).render("posts/edit", {
@@ -327,7 +433,8 @@ const update = async (req, res, next) => {
                 title,
                 description,
                 comments_enabled: comments_enabled === "on",
-                media_url
+                media_url,
+                tags
             }
         });
     }
@@ -367,6 +474,72 @@ const remove = async (req, res, next) => {
     }
 };
 
+const showByTag = async (req, res, next) => {
+    try {
+        const tagId = parseTagId(req.params.tagId);
+
+        if (!tagId) {
+            return res.status(404).render("posts/index", {
+                title: "Tag no encontrado",
+                posts: [],
+                currentTag: null
+            });
+        }
+
+        const tag = await Tag.findByPk(tagId, {
+            attributes: ["id", "name"]
+        });
+
+        if (!tag) {
+            return res.status(404).render("posts/index", {
+                title: "Tag no encontrado",
+                posts: [],
+                currentTag: null
+            });
+        }
+
+        const posts = await Post.findAll({
+            include: [
+                {
+                    model: User,
+                    as: "user",
+                    attributes: ["id", "username", "avatar_url"]
+                },
+                {
+                    model: Media,
+                    as: "media",
+                    attributes: ["id", "type", "url", "license", "watermark_text", "created_at"]
+                },
+                {
+                    model: Rating,
+                    as: "ratings",
+                    attributes: ["id", "user_id", "points"]
+                },
+                {
+                    model: Tag,
+                    as: "tags",
+                    attributes: ["id", "name"],
+                    through: {
+                        attributes: []
+                    },
+                    where: {
+                        id: tag.id
+                    }
+                }
+            ],
+            order: [["created_at", "DESC"]]
+        });
+
+        return res.status(200).render("posts/index", {
+            title: `Publicaciones con tag: ${tag.name}`,
+            posts,
+            currentTag: tag
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+
 module.exports = {
     index,
     show,
@@ -374,5 +547,6 @@ module.exports = {
     create,
     showEditForm,
     update,
-    remove
+    remove,
+    showByTag
 };

@@ -21,6 +21,14 @@ html(lang="es")
         p Fecha de creación: #{post.created_at}
         p
           a(href=`/users/${post.user_id}`) Ver perfil del autor
+        if post.tags && post.tags.length
+          p
+            | Tags:
+            each tag, index in post.tags
+              | 
+              a(href=`/posts/tags/${tag.id}`)= tag.name
+              if index < post.tags.length - 1
+                | ,
         p Valoraciones registradas: #{ratingSummary && ratingSummary.total ? ratingSummary.total : 0}
         p Promedio de valoración: #{ratingSummary && ratingSummary.average ? ratingSummary.average : "Sin valoraciones"}
         p Denuncias registradas: #{typeof totalReports === "number" ? totalReports : 0}

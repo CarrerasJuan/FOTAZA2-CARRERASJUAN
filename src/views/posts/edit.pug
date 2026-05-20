@@ -24,6 +24,10 @@ html(lang="es")
         input#media_url(type="url" name="media_url" value=values.media_url)
 
       div
+        label(for="tags") Tags
+        input#tags(type="text" name="tags" value=values.tags placeholder="paisaje, noche, urbano")
+
+      div
         label(for="comments_enabled") Permitir comentarios
         input#comments_enabled(
           type="checkbox"

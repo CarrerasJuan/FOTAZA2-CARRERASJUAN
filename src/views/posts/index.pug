@@ -9,6 +9,10 @@ html(lang="es")
     if sessionUser
       p
         a(href="/notifications") Ver notificaciones
+    if currentTag
+      p Filtrando por tag: #{currentTag.name}
+      p
+        a(href="/posts") Ver todas las publicaciones
 
     if posts.length
       each post in posts
@@ -22,6 +26,15 @@ html(lang="es")
           p Estado: #{post.status}
           p Comentarios habilitados: #{post.comments_enabled ? "Sí" : "No"}
           p Valoraciones: #{post.ratings && post.ratings.length ? post.ratings.length : 0}
+
+          if post.tags && post.tags.length
+            p
+              | Tags:
+              each tag, index in post.tags
+                | 
+                a(href=`/posts/tags/${tag.id}`)= tag.name
+                if index < post.tags.length - 1
+                  | ,
 
           p
             a(href=`/posts/${post.id}`) Ver detalle
