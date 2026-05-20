@@ -19,6 +19,9 @@ html(lang="es")
           p Estado: #{post.status}
           p Comentarios habilitados: #{post.comments_enabled ? "Sí" : "No"}
 
+          p
+            a(href=`/posts/${post.id}`) Ver detalle
+
           if post.media && post.media.length
             h3 Recursos multimedia
             ul

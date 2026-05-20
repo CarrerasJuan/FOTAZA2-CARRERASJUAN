@@ -1,0 +1,37 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= title
+  body
+    if post
+      article
+        h1= post.title
+        p Autor: #{post.user ? post.user.username : "Sin usuario"}
+
+        if post.user && post.user.biography
+          p Biografía del autor: #{post.user.biography}
+
+        if post.description
+          p= post.description
+
+        p Estado: #{post.status}
+        p Comentarios habilitados: #{post.comments_enabled ? "Sí" : "No"}
+        p Fecha de creación: #{post.created_at}
+
+        if post.media && post.media.length
+          h2 Recursos multimedia
+          ul
+            each item in post.media
+              li
+                | #{item.type} - #{item.url}
+                |  - Licencia: #{item.license}
+
+        p
+          a(href="/posts") Volver al listado
+    else
+      h1 Publicación no encontrada
+      p No existe una publicación registrada con el identificador solicitado.
+      p
+        a(href="/posts") Volver al listado
