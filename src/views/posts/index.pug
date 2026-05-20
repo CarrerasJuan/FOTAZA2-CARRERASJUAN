@@ -1,0 +1,28 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= title
+  body
+    h1 Publicaciones
+
+    if posts.length
+      each post in posts
+        article
+          h2= post.title
+          p Autor: #{post.user ? post.user.username : "Sin usuario"}
+
+          if post.description
+            p= post.description
+
+          p Estado: #{post.status}
+          p Comentarios habilitados: #{post.comments_enabled ? "Sí" : "No"}
+
+          if post.media && post.media.length
+            h3 Recursos multimedia
+            ul
+              each item in post.media
+                li #{item.type} - #{item.url}
+    else
+      p No hay publicaciones registradas por el momento.
