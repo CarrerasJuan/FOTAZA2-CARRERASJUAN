@@ -1,10 +1,24 @@
 const { Post, Comment } = require("../models");
 
+const parsePostId = (value) => {
+    const parsedId = Number.parseInt(value, 10);
+    return Number.isInteger(parsedId) && parsedId > 0 ? parsedId : null;
+};
+
 const create = async (req, res, next) => {
     const { content } = req.body;
 
     try {
-        const post = await Post.findByPk(req.params.id);
+        const postId = parsePostId(req.params.id);
+
+        if (!postId) {
+            return res.status(404).render("posts/show", {
+                title: "Publicación no encontrada",
+                post: null
+            });
+        }
+
+        const post = await Post.findByPk(postId);
 
         if (!post) {
             return res.status(404).render("posts/show", {
