@@ -9,6 +9,7 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const collectionRoutes = require("./routes/collectionRoutes");
 const validatorRoutes = require("./routes/validatorRoutes");
 const interestRoutes = require("./routes/interestRoutes");
+const { notFoundHandler, errorHandler } = require("./middlewares/handleErrors");
 
 const app = express();
 
@@ -48,5 +49,7 @@ app.use("/notifications", notificationRoutes);
 app.use("/collections", collectionRoutes);
 app.use("/validator", validatorRoutes);
 app.use("/interests", interestRoutes);
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 module.exports = app;

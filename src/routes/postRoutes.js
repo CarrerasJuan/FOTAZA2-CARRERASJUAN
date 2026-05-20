@@ -8,10 +8,10 @@ const router = express.Router();
 router.get("/", postController.index);
 router.get("/create", requireSession, postController.showCreateForm);
 router.post("/", requireSession, postController.create);
-router.post("/:id/comments", requireSession, commentController.create);
-router.get("/:id/edit", requireSession, postController.showEditForm);
-router.post("/:id/edit", requireSession, postController.update);
-router.post("/:id/delete", requireSession, postController.remove);
-router.get("/:id", postController.show);
+router.post("/:id(\\d+)/comments", requireSession, commentController.create);
+router.get("/:id(\\d+)/edit", requireSession, postController.showEditForm);
+router.post("/:id(\\d+)/edit", requireSession, postController.update);
+router.post("/:id(\\d+)/delete", requireSession, postController.remove);
+router.get("/:id(\\d+)", postController.show);
 
 module.exports = router;
