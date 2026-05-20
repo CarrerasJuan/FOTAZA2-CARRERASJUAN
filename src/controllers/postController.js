@@ -60,7 +60,47 @@ const show = async (req, res, next) => {
     }
 };
 
+const showCreateForm = (req, res) => {
+    return res.status(200).render("posts/create", {
+        title: "Crear publicación",
+        error: null,
+        values: {
+            title: "",
+            description: "",
+            comments_enabled: true
+        }
+    });
+};
+
+const create = async (req, res, next) => {
+    const { title, description, comments_enabled } = req.body;
+
+    try {
+        const post = await Post.create({
+            user_id: req.session.user.id,
+            title,
+            description: description || null,
+            comments_enabled: comments_enabled === "on",
+            status: "active"
+        });
+
+        return res.redirect(`/posts/${post.id}`);
+    } catch (error) {
+        return res.status(400).render("posts/create", {
+            title: "Crear publicación",
+            error: "No se pudo crear la publicación. Verificá los datos ingresados.",
+            values: {
+                title,
+                description,
+                comments_enabled: comments_enabled === "on"
+            }
+        });
+    }
+};
+
 module.exports = {
     index,
-    show
+    show,
+    showCreateForm,
+    create
 };
