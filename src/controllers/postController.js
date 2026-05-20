@@ -71,6 +71,8 @@ const syncPostTags = async (postId, rawTags) => {
     }
 };
 
+const hasInvalidTagLength = (rawTags) => normalizeTagNames(rawTags).some((tag) => tag.length > 50);
+
 const index = async (req, res, next) => {
     try {
         const posts = await Post.findAll({
@@ -222,7 +224,8 @@ const show = async (req, res, next) => {
             },
             totalReports,
             userCollections,
-            currentUserInterest
+            currentUserInterest,
+            formError: req.query.error || null
         });
     } catch (error) {
         return next(error);
@@ -244,9 +247,41 @@ const showCreateForm = (req, res) => {
 };
 
 const create = async (req, res, next) => {
-    const { title, description, comments_enabled, media_url, tags } = req.body;
+    const title = req.body.title ? req.body.title.trim() : "";
+    const description = req.body.description ? req.body.description.trim() : "";
+    const media_url = req.body.media_url ? req.body.media_url.trim() : "";
+    const tags = req.body.tags ? req.body.tags.trim() : "";
+    const comments_enabled = req.body.comments_enabled;
 
     try {
+        if (!title) {
+            return res.status(400).render("posts/create", {
+                title: "Crear publicación",
+                error: "El título es obligatorio.",
+                values: {
+                    title,
+                    description,
+                    comments_enabled: comments_enabled === "on",
+                    media_url,
+                    tags
+                }
+            });
+        }
+
+        if (hasInvalidTagLength(tags)) {
+            return res.status(400).render("posts/create", {
+                title: "Crear publicación",
+                error: "Cada tag debe tener como máximo 50 caracteres.",
+                values: {
+                    title,
+                    description,
+                    comments_enabled: comments_enabled === "on",
+                    media_url,
+                    tags
+                }
+            });
+        }
+
         const now = new Date();
 
         const post = await Post.create({
@@ -348,7 +383,11 @@ const showEditForm = async (req, res, next) => {
 };
 
 const update = async (req, res, next) => {
-    const { title, description, comments_enabled, media_url, tags } = req.body;
+    const title = req.body.title ? req.body.title.trim() : "";
+    const description = req.body.description ? req.body.description.trim() : "";
+    const media_url = req.body.media_url ? req.body.media_url.trim() : "";
+    const tags = req.body.tags ? req.body.tags.trim() : "";
+    const comments_enabled = req.body.comments_enabled;
 
     try {
         const postId = parsePostId(req.params.id);
@@ -390,6 +429,36 @@ const update = async (req, res, next) => {
             });
         }
 
+        if (!title) {
+            return res.status(400).render("posts/edit", {
+                title: "Editar publicación",
+                error: "El título es obligatorio.",
+                post,
+                values: {
+                    title,
+                    description,
+                    comments_enabled: comments_enabled === "on",
+                    media_url,
+                    tags
+                }
+            });
+        }
+
+        if (hasInvalidTagLength(tags)) {
+            return res.status(400).render("posts/edit", {
+                title: "Editar publicación",
+                error: "Cada tag debe tener como máximo 50 caracteres.",
+                post,
+                values: {
+                    title,
+                    description,
+                    comments_enabled: comments_enabled === "on",
+                    media_url,
+                    tags
+                }
+            });
+        }
+
         await post.update({
             title,
             description: description || null,
@@ -397,7 +466,7 @@ const update = async (req, res, next) => {
         });
 
         const currentMedia = post.media && post.media.length ? post.media[0] : null;
-        const trimmedMediaUrl = media_url ? media_url.trim() : "";
+        const trimmedMediaUrl = media_url;
 
         if (trimmedMediaUrl) {
             if (currentMedia) {

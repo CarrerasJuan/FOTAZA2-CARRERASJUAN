@@ -13,7 +13,7 @@ html(lang="es")
     form(action="/auth/login" method="POST")
       div
         label(for="email") Correo electrónico
-        input#email(type="email" name="email" required)
+        input#email(type="email" name="email" required value=values.email)
 
       div
         label(for="password") Contraseña

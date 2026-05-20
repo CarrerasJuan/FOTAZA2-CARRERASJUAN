@@ -28,7 +28,7 @@ const reportPost = async (req, res, next) => {
         }
 
         if (!reason) {
-            return res.status(400).redirect(`/posts/${post.id}`);
+            return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("Debes indicar un motivo para la denuncia.")}`);
         }
 
         const report = await Report.create({

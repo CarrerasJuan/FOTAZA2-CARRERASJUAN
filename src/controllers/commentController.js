@@ -6,7 +6,7 @@ const parsePostId = (value) => {
 };
 
 const create = async (req, res, next) => {
-    const { content } = req.body;
+    const content = req.body.content ? req.body.content.trim() : "";
 
     try {
         const postId = parsePostId(req.params.id);
@@ -31,6 +31,10 @@ const create = async (req, res, next) => {
             return res.status(403).json({
                 message: "Los comentarios están deshabilitados para esta publicación."
             });
+        }
+
+        if (!content) {
+            return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("Debes escribir un comentario.")}`);
         }
 
         const now = new Date();

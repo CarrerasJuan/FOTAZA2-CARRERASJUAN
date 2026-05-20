@@ -13,11 +13,11 @@ html(lang="es")
     form(action="/auth/register" method="POST")
       div
         label(for="username") Nombre de usuario
-        input#username(type="text" name="username" required)
+        input#username(type="text" name="username" required value=values.username)
 
       div
         label(for="email") Correo electrónico
-        input#email(type="email" name="email" required)
+        input#email(type="email" name="email" required value=values.email)
 
       div
         label(for="password") Contraseña

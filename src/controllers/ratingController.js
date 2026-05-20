@@ -27,7 +27,7 @@ const ratePost = async (req, res, next) => {
         }
 
         if (!Number.isInteger(parsedPoints) || parsedPoints < 1 || parsedPoints > 5) {
-            return res.status(400).redirect(`/posts/${post.id}`);
+            return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("La valoración debe estar entre 1 y 5.")}`);
         }
 
         const now = new Date();

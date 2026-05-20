@@ -59,6 +59,16 @@ const create = async (req, res, next) => {
             });
         }
 
+        if (name.length > 80) {
+            return res.status(400).render("collections/create", {
+                title: "Crear colección",
+                error: "El nombre de la colección no puede superar los 80 caracteres.",
+                values: {
+                    name
+                }
+            });
+        }
+
         const collection = await Collection.create({
             user_id: req.session.user.id,
             name

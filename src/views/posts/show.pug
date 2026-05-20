@@ -8,6 +8,8 @@ html(lang="es")
     if post
       article
         h1= post.title
+        if formError
+          p= formError
         p Autor: #{post.user ? post.user.username : "Sin usuario"}
 
         if post.user && post.user.biography
