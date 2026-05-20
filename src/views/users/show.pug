@@ -19,6 +19,10 @@ html(lang="es")
       if profileUser.avatar_url
         img(src=profileUser.avatar_url alt=profileUser.username width="180")
 
+      if sessionUser && sessionUser.id === profileUser.id
+        p
+          a(href=`/users/${profileUser.id}/edit`) Editar perfil
+
       if sessionUser && sessionUser.id !== profileUser.id
         if followSummary && followSummary.isFollowing
           form(action=`/users/${profileUser.id}/unfollow` method="POST")

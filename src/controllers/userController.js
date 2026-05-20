@@ -78,6 +78,120 @@ const show = async (req, res, next) => {
     }
 };
 
+const showEditForm = async (req, res, next) => {
+    try {
+        const userId = parseUserId(req.params.id);
+
+        if (!userId) {
+            return res.status(404).render("users/show", {
+                title: "Usuario no encontrado",
+                profileUser: null
+            });
+        }
+
+        const profileUser = await User.findByPk(userId, {
+            attributes: ["id", "username", "email", "biography", "avatar_url"]
+        });
+
+        if (!profileUser) {
+            return res.status(404).render("users/show", {
+                title: "Usuario no encontrado",
+                profileUser: null
+            });
+        }
+
+        if (req.session.user.id !== profileUser.id) {
+            return res.status(403).json({
+                message: "No tienes permisos para editar este perfil."
+            });
+        }
+
+        return res.status(200).render("users/edit", {
+            title: "Editar perfil",
+            error: null,
+            profileUser,
+            values: {
+                username: profileUser.username || "",
+                email: profileUser.email || "",
+                biography: profileUser.biography || "",
+                avatar_url: profileUser.avatar_url || ""
+            }
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+
+const update = async (req, res, next) => {
+    const username = req.body.username ? req.body.username.trim() : "";
+    const email = req.body.email ? req.body.email.trim() : "";
+    const biography = req.body.biography ? req.body.biography.trim() : "";
+    const avatar_url = req.body.avatar_url ? req.body.avatar_url.trim() : "";
+
+    try {
+        const userId = parseUserId(req.params.id);
+
+        if (!userId) {
+            return res.status(404).render("users/show", {
+                title: "Usuario no encontrado",
+                profileUser: null
+            });
+        }
+
+        const profileUser = await User.findByPk(userId, {
+            attributes: ["id", "username", "email", "biography", "avatar_url"]
+        });
+
+        if (!profileUser) {
+            return res.status(404).render("users/show", {
+                title: "Usuario no encontrado",
+                profileUser: null
+            });
+        }
+
+        if (req.session.user.id !== profileUser.id) {
+            return res.status(403).json({
+                message: "No tienes permisos para editar este perfil."
+            });
+        }
+
+        await profileUser.update({
+            username,
+            email,
+            biography: biography || null,
+            avatar_url: avatar_url || null
+        });
+
+        req.session.user = {
+            ...req.session.user,
+            username: profileUser.username,
+            email: profileUser.email
+        };
+
+        return res.redirect(`/users/${profileUser.id}`);
+    } catch (error) {
+        if (error.name === "SequelizeUniqueConstraintError") {
+            return res.status(400).render("users/edit", {
+                title: "Editar perfil",
+                error: "El usuario o el correo ya se encuentran registrados.",
+                profileUser: {
+                    id: req.params.id
+                },
+                values: {
+                    username,
+                    email,
+                    biography,
+                    avatar_url
+                }
+            });
+        }
+
+        return next(error);
+    }
+};
+
 module.exports = {
-    show
+    show,
+    showEditForm,
+    update
 };

@@ -1,0 +1,33 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= title
+  body
+    h1 Editar perfil
+
+    if error
+      p= error
+
+    form(action=`/users/${profileUser.id}/edit` method="POST")
+      div
+        label(for="username") Usuario
+        input#username(type="text" name="username" required maxlength="50" value=values.username)
+
+      div
+        label(for="email") Correo
+        input#email(type="email" name="email" required maxlength="100" value=values.email)
+
+      div
+        label(for="biography") Biografía
+        textarea#biography(name="biography")= values.biography
+
+      div
+        label(for="avatar_url") URL de avatar
+        input#avatar_url(type="url" name="avatar_url" maxlength="255" value=values.avatar_url)
+
+      button(type="submit") Guardar cambios
+
+    p
+      a(href=`/users/${profileUser.id}`) Volver al perfil
