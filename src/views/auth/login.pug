@@ -1,0 +1,25 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= title
+  body
+    h1 Iniciar sesión
+
+    if error
+      p= error
+
+    form(action="/auth/login" method="POST")
+      div
+        label(for="email") Correo electrónico
+        input#email(type="email" name="email" required)
+
+      div
+        label(for="password") Contraseña
+        input#password(type="password" name="password" required)
+
+      button(type="submit") Ingresar
+
+    p
+      a(href="/auth/register") Crear cuenta

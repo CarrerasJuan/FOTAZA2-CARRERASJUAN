@@ -1,4 +1,5 @@
 const express = require("express");
+const session = require("express-session");
 const path = require("path");
 const authRoutes = require("./routes/authRoutes");
 const postRoutes = require("./routes/postRoutes");
@@ -16,6 +17,17 @@ app.set("views", path.join(__dirname, "views"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET || "fotaza_session_secret",
+        resave: false,
+        saveUninitialized: false
+    })
+);
+app.use((req, res, next) => {
+    res.locals.sessionUser = req.session?.user || null;
+    next();
+});
 app.use(express.static(path.join(__dirname, "..", "public")));
 
 app.get("/", (req, res) => {
