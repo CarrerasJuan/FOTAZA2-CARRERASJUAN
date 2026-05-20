@@ -1,10 +1,110 @@
-const index = (req, res) => {
-    res.status(200).json({
-        module: "interests",
-        status: "ok"
-    });
+const { Interest, Post, User, Media } = require("../models");
+
+const parsePostId = (value) => {
+    const parsedId = Number.parseInt(value, 10);
+    return Number.isInteger(parsedId) && parsedId > 0 ? parsedId : null;
+};
+
+const index = async (req, res, next) => {
+    try {
+        const interests = await Interest.findAll({
+            where: {
+                user_id: req.session.user.id
+            },
+            include: [
+                {
+                    model: Post,
+                    as: "post",
+                    include: [
+                        {
+                            model: User,
+                            as: "user",
+                            attributes: ["id", "username"]
+                        },
+                        {
+                            model: Media,
+                            as: "media",
+                            attributes: ["id", "type", "url"]
+                        }
+                    ]
+                }
+            ],
+            order: [["created_at", "DESC"]]
+        });
+
+        return res.status(200).render("interests/index", {
+            title: "Mis intereses",
+            interests
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+
+const create = async (req, res, next) => {
+    try {
+        const postId = parsePostId(req.body.post_id);
+
+        if (!postId) {
+            return res.status(404).render("posts/show", {
+                title: "Publicación no encontrada",
+                post: null
+            });
+        }
+
+        const post = await Post.findByPk(postId);
+
+        if (!post) {
+            return res.status(404).render("posts/show", {
+                title: "Publicación no encontrada",
+                post: null
+            });
+        }
+
+        await Interest.findOrCreate({
+            where: {
+                user_id: req.session.user.id,
+                post_id: post.id
+            },
+            defaults: {
+                user_id: req.session.user.id,
+                post_id: post.id,
+                created_at: new Date()
+            }
+        });
+
+        return res.redirect(`/posts/${post.id}`);
+    } catch (error) {
+        return next(error);
+    }
+};
+
+const remove = async (req, res, next) => {
+    try {
+        const postId = parsePostId(req.params.postId);
+
+        if (!postId) {
+            return res.status(404).render("posts/show", {
+                title: "Publicación no encontrada",
+                post: null
+            });
+        }
+
+        await Interest.destroy({
+            where: {
+                user_id: req.session.user.id,
+                post_id: postId
+            }
+        });
+
+        return res.redirect(`/posts/${postId}`);
+    } catch (error) {
+        return next(error);
+    }
 };
 
 module.exports = {
-    index
+    index,
+    create,
+    remove
 };

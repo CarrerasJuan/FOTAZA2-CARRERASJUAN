@@ -1,0 +1,46 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= title
+  body
+    h1 Búsqueda
+
+    form(action="/search" method="GET")
+      div
+        label(for="q") Término de búsqueda
+        input#q(type="text" name="q" value=query)
+      button(type="submit") Buscar
+
+    if query
+      h2 Usuarios encontrados
+      if users.length
+        each user in users
+          article
+            h3= user.username
+            p= user.email
+            p
+              a(href=`/users/${user.id}`) Ver perfil
+      else
+        p No se encontraron usuarios para la búsqueda ingresada.
+
+      h2 Publicaciones encontradas
+      if posts.length
+        each post in posts
+          article
+            h3= post.title
+            p Autor: #{post.user ? post.user.username : "Sin usuario"}
+            if post.description
+              p= post.description
+            if post.tags && post.tags.length
+              p Etiquetas: #{post.tags.map((tag) => tag.name).join(", ")}
+            p
+              a(href=`/posts/${post.id}`) Ver publicación
+      else
+        p No se encontraron publicaciones para la búsqueda ingresada.
+    else
+      p Ingresá un término para buscar usuarios o publicaciones.
+
+    p
+      a(href="/posts") Volver a publicaciones

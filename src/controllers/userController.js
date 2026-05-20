@@ -1,4 +1,4 @@
-const { User, Post, Media } = require("../models");
+const { User, Post, Media, Follow } = require("../models");
 
 const parseUserId = (value) => {
     const parsedId = Number.parseInt(value, 10);
@@ -41,9 +41,37 @@ const show = async (req, res, next) => {
             });
         }
 
+        const followersCount = await Follow.count({
+            where: {
+                following_id: profileUser.id
+            }
+        });
+
+        const followingCount = await Follow.count({
+            where: {
+                follower_id: profileUser.id
+            }
+        });
+
+        const isFollowing = req.session?.user
+            ? Boolean(
+                await Follow.findOne({
+                    where: {
+                        follower_id: req.session.user.id,
+                        following_id: profileUser.id
+                    }
+                })
+            )
+            : false;
+
         return res.status(200).render("users/show", {
             title: `Perfil de ${profileUser.username}`,
-            profileUser
+            profileUser,
+            followSummary: {
+                followersCount,
+                followingCount,
+                isFollowing
+            }
         });
     } catch (error) {
         return next(error);

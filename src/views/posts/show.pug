@@ -48,6 +48,17 @@ html(lang="es")
           p No hay comentarios registrados por el momento.
 
         if sessionUser
+          h2 Interés
+          if currentUserInterest
+            p Esta publicación ya se encuentra en tus intereses.
+            form(action=`/interests/${post.id}/delete` method="POST")
+              button(type="submit") Quitar de intereses
+          else
+            p Puedes guardar esta publicación como interés.
+            form(action="/interests" method="POST")
+              input(type="hidden" name="post_id" value=post.id)
+              button(type="submit") Guardar en intereses
+
           if userCollections && userCollections.length
             h2 Guardar en colección
             form(action=`/collections/${userCollections[0].id}/items` method="POST")
@@ -112,6 +123,8 @@ html(lang="es")
 
         p
           a(href="/posts") Volver al listado
+        p
+          a(href=`/search?q=${encodeURIComponent(post.title)}`) Buscar contenido relacionado
     else
       h1 Publicación no encontrada
       p No existe una publicación registrada con el identificador solicitado.

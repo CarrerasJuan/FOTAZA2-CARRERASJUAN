@@ -10,12 +10,22 @@ html(lang="es")
       p Correo: #{profileUser.email}
       p Estado: #{profileUser.status}
       p Miembro desde: #{profileUser.created_at}
+      p Seguidores: #{followSummary ? followSummary.followersCount : 0}
+      p Seguidos: #{followSummary ? followSummary.followingCount : 0}
 
       if profileUser.biography
         p= profileUser.biography
 
       if profileUser.avatar_url
         img(src=profileUser.avatar_url alt=profileUser.username width="180")
+
+      if sessionUser && sessionUser.id !== profileUser.id
+        if followSummary && followSummary.isFollowing
+          form(action=`/users/${profileUser.id}/unfollow` method="POST")
+            button(type="submit") Dejar de seguir
+        else
+          form(action=`/users/${profileUser.id}/follow` method="POST")
+            button(type="submit") Seguir
 
       h2 Publicaciones del usuario
       if profileUser.posts && profileUser.posts.length
@@ -35,6 +45,9 @@ html(lang="es")
 
       p
         a(href="/posts") Volver a publicaciones
+      if sessionUser
+        p
+          a(href="/interests") Ver mis intereses
     else
       h1 Usuario no encontrado
       p No existe un usuario registrado con el identificador solicitado.

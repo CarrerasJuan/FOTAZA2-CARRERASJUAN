@@ -1,4 +1,4 @@
-const { Post, User, Media, Comment, Rating, Report, Collection } = require("../models");
+const { Post, User, Media, Comment, Rating, Report, Collection, Interest } = require("../models");
 
 const parsePostId = (value) => {
     const parsedId = Number.parseInt(value, 10);
@@ -120,6 +120,15 @@ const show = async (req, res, next) => {
             })
             : [];
 
+        const currentUserInterest = req.session?.user
+            ? await Interest.findOne({
+                where: {
+                    user_id: req.session.user.id,
+                    post_id: post.id
+                }
+            })
+            : null;
+
         return res.status(200).render("posts/show", {
             title: post.title,
             post,
@@ -129,7 +138,8 @@ const show = async (req, res, next) => {
                 currentUserRating
             },
             totalReports,
-            userCollections
+            userCollections,
+            currentUserInterest
         });
     } catch (error) {
         return next(error);
