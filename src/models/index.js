@@ -7,6 +7,11 @@ const { Rating, initializeRating } = require("./Rating");
 const { Report, initializeReport } = require("./Report");
 const { Follow, initializeFollow } = require("./Follow");
 const { Notification, initializeNotification } = require("./Notification");
+const { Interest, initializeInterest } = require("./Interest");
+const { Collection, initializeCollection } = require("./Collection");
+const { CollectionItem, initializeCollectionItem } = require("./CollectionItem");
+const { Tag, initializeTag } = require("./Tag");
+const { PostTag, initializePostTag } = require("./PostTag");
 
 const initializeModels = () => {
     if (!User.sequelize) {
@@ -39,6 +44,26 @@ const initializeModels = () => {
 
     if (!Notification.sequelize) {
         initializeNotification(sequelize);
+    }
+
+    if (!Interest.sequelize) {
+        initializeInterest(sequelize);
+    }
+
+    if (!Collection.sequelize) {
+        initializeCollection(sequelize);
+    }
+
+    if (!CollectionItem.sequelize) {
+        initializeCollectionItem(sequelize);
+    }
+
+    if (!Tag.sequelize) {
+        initializeTag(sequelize);
+    }
+
+    if (!PostTag.sequelize) {
+        initializePostTag(sequelize);
     }
 
     User.hasMany(Post, {
@@ -181,6 +206,90 @@ const initializeModels = () => {
         as: "actor"
     });
 
+    User.hasMany(Interest, {
+        foreignKey: "user_id",
+        as: "interests"
+    });
+
+    Interest.belongsTo(User, {
+        foreignKey: "user_id",
+        as: "user"
+    });
+
+    Post.hasMany(Interest, {
+        foreignKey: "post_id",
+        as: "interests"
+    });
+
+    Interest.belongsTo(Post, {
+        foreignKey: "post_id",
+        as: "post"
+    });
+
+    User.hasMany(Collection, {
+        foreignKey: "user_id",
+        as: "collections"
+    });
+
+    Collection.belongsTo(User, {
+        foreignKey: "user_id",
+        as: "user"
+    });
+
+    Collection.hasMany(CollectionItem, {
+        foreignKey: "collection_id",
+        as: "items"
+    });
+
+    CollectionItem.belongsTo(Collection, {
+        foreignKey: "collection_id",
+        as: "collection"
+    });
+
+    Post.hasMany(CollectionItem, {
+        foreignKey: "post_id",
+        as: "collectionItems"
+    });
+
+    CollectionItem.belongsTo(Post, {
+        foreignKey: "post_id",
+        as: "post"
+    });
+
+    Post.belongsToMany(Tag, {
+        through: PostTag,
+        foreignKey: "post_id",
+        otherKey: "tag_id",
+        as: "tags"
+    });
+
+    Tag.belongsToMany(Post, {
+        through: PostTag,
+        foreignKey: "tag_id",
+        otherKey: "post_id",
+        as: "posts"
+    });
+
+    Post.hasMany(PostTag, {
+        foreignKey: "post_id",
+        as: "postTags"
+    });
+
+    PostTag.belongsTo(Post, {
+        foreignKey: "post_id",
+        as: "post"
+    });
+
+    Tag.hasMany(PostTag, {
+        foreignKey: "tag_id",
+        as: "postTags"
+    });
+
+    PostTag.belongsTo(Tag, {
+        foreignKey: "tag_id",
+        as: "tag"
+    });
+
     return {
         sequelize,
         User,
@@ -190,7 +299,12 @@ const initializeModels = () => {
         Rating,
         Report,
         Follow,
-        Notification
+        Notification,
+        Interest,
+        Collection,
+        CollectionItem,
+        Tag,
+        PostTag
     };
 };
 
