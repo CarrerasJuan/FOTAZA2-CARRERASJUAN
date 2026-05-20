@@ -1,10 +1,10 @@
-const { sequelize, User, Post, Media, Comment } = require("../models");
+const { sequelize, User, Post, Media, Comment, Rating, Report, Follow, Notification } = require("../models");
 
 const checkModels = async () => {
     try {
         await sequelize.authenticate();
 
-        const loadedModels = [User, Post, Media, Comment]
+        const loadedModels = [User, Post, Media, Comment, Rating, Report, Follow, Notification]
             .map((model) => model.name)
             .join(", ");
 

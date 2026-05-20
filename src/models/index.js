@@ -3,6 +3,10 @@ const { User, initializeUser } = require("./User");
 const { Post, initializePost } = require("./Post");
 const { Media, initializeMedia } = require("./Media");
 const { Comment, initializeComment } = require("./Comment");
+const { Rating, initializeRating } = require("./Rating");
+const { Report, initializeReport } = require("./Report");
+const { Follow, initializeFollow } = require("./Follow");
+const { Notification, initializeNotification } = require("./Notification");
 
 const initializeModels = () => {
     if (!User.sequelize) {
@@ -19,6 +23,22 @@ const initializeModels = () => {
 
     if (!Comment.sequelize) {
         initializeComment(sequelize);
+    }
+
+    if (!Rating.sequelize) {
+        initializeRating(sequelize);
+    }
+
+    if (!Report.sequelize) {
+        initializeReport(sequelize);
+    }
+
+    if (!Follow.sequelize) {
+        initializeFollow(sequelize);
+    }
+
+    if (!Notification.sequelize) {
+        initializeNotification(sequelize);
     }
 
     User.hasMany(Post, {
@@ -61,12 +81,116 @@ const initializeModels = () => {
         as: "post"
     });
 
+    User.hasMany(Rating, {
+        foreignKey: "user_id",
+        as: "ratings"
+    });
+
+    Rating.belongsTo(User, {
+        foreignKey: "user_id",
+        as: "user"
+    });
+
+    Post.hasMany(Rating, {
+        foreignKey: "post_id",
+        as: "ratings"
+    });
+
+    Rating.belongsTo(Post, {
+        foreignKey: "post_id",
+        as: "post"
+    });
+
+    User.hasMany(Report, {
+        foreignKey: "reporter_id",
+        as: "reportsMade"
+    });
+
+    Report.belongsTo(User, {
+        foreignKey: "reporter_id",
+        as: "reporter"
+    });
+
+    User.hasMany(Report, {
+        foreignKey: "reported_user_id",
+        as: "reportsReceived"
+    });
+
+    Report.belongsTo(User, {
+        foreignKey: "reported_user_id",
+        as: "reportedUser"
+    });
+
+    Post.hasMany(Report, {
+        foreignKey: "post_id",
+        as: "reports"
+    });
+
+    Report.belongsTo(Post, {
+        foreignKey: "post_id",
+        as: "post"
+    });
+
+    Comment.hasMany(Report, {
+        foreignKey: "comment_id",
+        as: "reports"
+    });
+
+    Report.belongsTo(Comment, {
+        foreignKey: "comment_id",
+        as: "comment"
+    });
+
+    User.hasMany(Follow, {
+        foreignKey: "follower_id",
+        as: "followingRelations"
+    });
+
+    Follow.belongsTo(User, {
+        foreignKey: "follower_id",
+        as: "follower"
+    });
+
+    User.hasMany(Follow, {
+        foreignKey: "following_id",
+        as: "followerRelations"
+    });
+
+    Follow.belongsTo(User, {
+        foreignKey: "following_id",
+        as: "following"
+    });
+
+    User.hasMany(Notification, {
+        foreignKey: "user_id",
+        as: "notifications"
+    });
+
+    Notification.belongsTo(User, {
+        foreignKey: "user_id",
+        as: "user"
+    });
+
+    User.hasMany(Notification, {
+        foreignKey: "actor_id",
+        as: "actionsGenerated"
+    });
+
+    Notification.belongsTo(User, {
+        foreignKey: "actor_id",
+        as: "actor"
+    });
+
     return {
         sequelize,
         User,
         Post,
         Media,
-        Comment
+        Comment,
+        Rating,
+        Report,
+        Follow,
+        Notification
     };
 };
 
