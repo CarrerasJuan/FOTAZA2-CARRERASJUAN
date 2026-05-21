@@ -11,4 +11,13 @@ html(lang="es")
       a(href="/posts") Ver publicaciones
     if sessionUser
       p
+        a(href=`/users/${sessionUser.id}`) Ver mi perfil
+      p
         a(href="/notifications") Ver notificaciones
+      form(action="/auth/logout" method="POST")
+        button(type="submit") Cerrar sesión
+    else
+      p
+        a(href="/auth/login") Iniciar sesión
+      p
+        a(href="/auth/register") Crear cuenta
