@@ -1,4 +1,4 @@
-const { Interest, Post, User, Media } = require("../models");
+const { Interest, Post, User, Media, Notification, NotificationInterest } = require("../models");
 
 const parsePostId = (value) => {
     const parsedId = Number.parseInt(value, 10);
@@ -61,7 +61,8 @@ const create = async (req, res, next) => {
             });
         }
 
-        await Interest.findOrCreate({
+        const now = new Date();
+        const [interest, created] = await Interest.findOrCreate({
             where: {
                 user_id: req.session.user.id,
                 post_id: post.id
@@ -69,12 +70,31 @@ const create = async (req, res, next) => {
             defaults: {
                 user_id: req.session.user.id,
                 post_id: post.id,
-                created_at: new Date()
+                created_at: now
             }
         });
 
+        if (created && post.user_id !== req.session.user.id) {
+            const notification = await Notification.create({
+                user_id: post.user_id,
+                actor_id: req.session.user.id,
+                type: "interest",
+                is_read: false,
+                created_at: now
+            });
+
+            await NotificationInterest.create({
+                notification_id: notification.id,
+                interest_id: interest.id
+            });
+        }
+
         return res.redirect(`/posts/${post.id}`);
     } catch (error) {
+        if (error.name === "SequelizeUniqueConstraintError") {
+            return res.redirect(`/posts/${req.body.post_id}`);
+        }
+
         return next(error);
     }
 };

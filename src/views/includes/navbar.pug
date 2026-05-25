@@ -23,6 +23,7 @@ header.navbar
         +navLink(`/users/${sessionUser.id}`, "Mi perfil")
         +navLink("/collections", "Colecciones")
         +navLink("/interests", "Intereses")
+        +navLink("/posts/following", "Seguidos")
         +navLink("/notifications", "Notificaciones")
         if sessionUser.role === "validator"
           +navLink("/validator", "Validador")

@@ -8,6 +8,7 @@ const requireSession = require("../middlewares/requireSession");
 const router = express.Router();
 
 router.get("/", postController.index);
+router.get("/following", requireSession, postController.followingFeed);
 router.get("/tags/:tagId(\\d+)", postController.showByTag);
 router.get("/create", requireSession, postController.showCreateForm);
 router.post("/", requireSession, postController.create);

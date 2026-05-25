@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { Post, User, Media, Comment, Rating, Report, Collection, Interest, Tag, PostTag } = require("../models");
+const { Post, User, Media, Comment, Rating, Report, Collection, Interest, Tag, PostTag, Follow } = require("../models");
 
 const parsePostId = (value) => {
     const parsedId = Number.parseInt(value, 10);
@@ -94,41 +94,46 @@ const buildEditValues = (post, overrides = {}) => ({
     tags: overrides.tags ?? (post.tags && post.tags.length ? post.tags.map((tag) => tag.name).join(", ") : "")
 });
 
+const postFeedInclude = [
+    {
+        model: User,
+        as: "user",
+        attributes: ["id", "username", "avatar_url"]
+    },
+    {
+        model: Media,
+        as: "media",
+        attributes: ["id", "type", "url", "license", "watermark_text", "created_at"]
+    },
+    {
+        model: Rating,
+        as: "ratings",
+        attributes: ["id", "user_id", "points"]
+    },
+    {
+        model: Tag,
+        as: "tags",
+        attributes: ["id", "name"],
+        through: {
+            attributes: []
+        }
+    }
+];
+
 const index = async (req, res, next) => {
     try {
         const posts = await Post.findAll({
-            include: [
-                {
-                    model: User,
-                    as: "user",
-                    attributes: ["id", "username", "avatar_url"]
-                },
-                {
-                    model: Media,
-                    as: "media",
-                    attributes: ["id", "type", "url", "license", "watermark_text", "created_at"]
-                },
-                {
-                    model: Rating,
-                    as: "ratings",
-                    attributes: ["id", "user_id", "points"]
-                },
-                {
-                    model: Tag,
-                    as: "tags",
-                    attributes: ["id", "name"],
-                    through: {
-                        attributes: []
-                    }
-                }
-            ],
+            include: postFeedInclude,
             order: [["created_at", "DESC"]]
         });
 
         return res.status(200).render("posts/index", {
             title: "Publicaciones",
             posts,
-            currentTag: null
+            currentTag: null,
+            feedDescription: "Explorá el contenido publicado por la comunidad, abrí detalles, seguí autores y navegá por tags.",
+            emptyTitle: "Todavía no hay publicaciones",
+            emptyMessage: "Cuando existan registros, el feed las mostrará acá con sus datos principales."
         });
     } catch (error) {
         return next(error);
@@ -279,6 +284,44 @@ const showCreateForm = (req, res) => {
             tags: ""
         }
     });
+};
+
+const followingFeed = async (req, res, next) => {
+    try {
+        const followedUsers = await Follow.findAll({
+            where: {
+                follower_id: req.session.user.id
+            },
+            attributes: ["following_id"]
+        });
+
+        const followedUserIds = followedUsers
+            .map((follow) => follow.following_id)
+            .filter((userId) => userId !== req.session.user.id);
+
+        const posts = followedUserIds.length
+            ? await Post.findAll({
+                where: {
+                    user_id: {
+                        [Op.in]: followedUserIds
+                    }
+                },
+                include: postFeedInclude,
+                order: [["created_at", "DESC"]]
+            })
+            : [];
+
+        return res.status(200).render("posts/index", {
+            title: "Publicaciones de seguidos",
+            posts,
+            currentTag: null,
+            feedDescription: "Revisá solo las publicaciones activas de los usuarios que seguís dentro de la comunidad.",
+            emptyTitle: "Todavía no hay publicaciones de usuarios seguidos",
+            emptyMessage: "Cuando las personas que seguís publiquen contenido activo, aparecerá en este feed."
+        });
+    } catch (error) {
+        return next(error);
+    }
 };
 
 const create = async (req, res, next) => {
@@ -610,28 +653,9 @@ const showByTag = async (req, res, next) => {
 
         const posts = await Post.findAll({
             include: [
+                ...postFeedInclude.slice(0, 3),
                 {
-                    model: User,
-                    as: "user",
-                    attributes: ["id", "username", "avatar_url"]
-                },
-                {
-                    model: Media,
-                    as: "media",
-                    attributes: ["id", "type", "url", "license", "watermark_text", "created_at"]
-                },
-                {
-                    model: Rating,
-                    as: "ratings",
-                    attributes: ["id", "user_id", "points"]
-                },
-                {
-                    model: Tag,
-                    as: "tags",
-                    attributes: ["id", "name"],
-                    through: {
-                        attributes: []
-                    },
+                    ...postFeedInclude[3],
                     where: {
                         id: tag.id
                     }
@@ -643,7 +667,10 @@ const showByTag = async (req, res, next) => {
         return res.status(200).render("posts/index", {
             title: `Publicaciones con tag: ${tag.name}`,
             posts,
-            currentTag: tag
+            currentTag: tag,
+            feedDescription: "Explorá el contenido publicado por la comunidad, abrí detalles, seguí autores y navegá por tags.",
+            emptyTitle: "Todavía no hay publicaciones",
+            emptyMessage: "Cuando existan registros, el feed las mostrará acá con sus datos principales."
         });
     } catch (error) {
         return next(error);
@@ -654,6 +681,7 @@ module.exports = {
     index,
     show,
     showCreateForm,
+    followingFeed,
     create,
     showEditForm,
     update,

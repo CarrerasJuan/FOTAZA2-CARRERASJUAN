@@ -4,9 +4,8 @@ block content
   section.page-section
     .panel
       span.section-eyebrow Feed visual
-      h1 Publicaciones
-      p.section-description
-        | Explorá el contenido publicado por la comunidad, abrí detalles, seguí autores y navegá por tags.
+      h1= title || "Publicaciones"
+      p.section-description= feedDescription || "Explorá el contenido publicado por la comunidad, abrí detalles, seguí autores y navegá por tags."
       .inline-actions
         if sessionUser
           a.button.button--dark(href="/posts/create") Crear publicación
@@ -48,7 +47,7 @@ block content
                 a.button.button--dark.button--small(href=`/posts/${post.id}`) Ver detalle
     else
       .empty-state
-        h2 Todavía no hay publicaciones
-        p.text-muted Cuando existan registros, el feed las mostrará acá con sus datos principales.
+        h2= emptyTitle || "Todavía no hay publicaciones"
+        p.text-muted= emptyMessage || "Cuando existan registros, el feed las mostrará acá con sus datos principales."
         if sessionUser
           a.button.button--dark(href="/posts/create") Publicar primero
