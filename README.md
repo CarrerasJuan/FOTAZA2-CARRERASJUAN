@@ -1,104 +1,44 @@
-# Fotaza
+# FOTAZA2
 
-## Descripción general
+Aplicacion web comunitaria para compartir fotografias, desarrollada con Node.js, Express, Pug, PostgreSQL y Sequelize bajo una arquitectura MVC.
 
-FOTAZA2 es una aplicación web comunitaria para compartir fotografías y videos, desarrollada con Node.js, Express, PUG, PostgreSQL y Sequelize. El proyecto fue organizado como una aplicación MVC orientada al trabajo progresivo por módulos, integrando autenticación, publicaciones, interacción social y navegación básica sobre una base relacional real.
-
-## Tecnologías utilizadas
+## Tecnologias utilizadas
 
 - Node.js
 - Express
-- PUG
+- Pug
 - PostgreSQL
 - Sequelize
 - bcrypt
 - express-session
 - dotenv
 
-## Arquitectura
+## Requisitos previos
 
-El proyecto sigue una organización orientada al patrón MVC, separando responsabilidades entre:
+- Node.js 18 o superior
+- npm
+- PostgreSQL 14 o superior
+- Una base de datos PostgreSQL vacia creada previamente
 
-- `models`: definición de entidades y asociaciones con Sequelize
-- `views`: vistas PUG para la interfaz renderizada del lado del servidor
-- `controllers`: lógica de cada módulo funcional
-- `routes`: definición de rutas por recurso o módulo
-- `middlewares`: validación de sesión, control de acceso y manejo de errores
+## Instalacion y puesta en marcha
 
-## Funcionalidades implementadas
+Seguir exactamente este orden:
 
-- registro de usuarios
-- login con autenticación real
-- hash de contraseñas con bcrypt
-- manejo de sesión con express-session
-- logout
-- control de acceso a rutas protegidas
-- publicaciones
-- listado de publicaciones
-- detalle de publicación
-- creación de publicaciones
-- edición de publicaciones propias
-- eliminación de publicaciones propias
-- imágenes por URL
-- comentarios
-- valoraciones
-- denuncias
-- perfiles de usuario
-- edición básica de perfil
-- seguimiento entre usuarios
-- intereses
-- búsqueda básica
-- colecciones
-- agregado de publicaciones a colecciones
-- tags en publicaciones
-- notificaciones básicas
-- validación de modelos Sequelize
-- verificación de conexión a PostgreSQL
+1. Clonar el repositorio.
+2. Ejecutar `npm install`.
+3. Crear una base PostgreSQL vacia.
+4. Copiar `.env.example` a `.env`.
+5. Configurar en `.env` las variables `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` y `DB_PASSWORD`.
+6. Ejecutar `npm run db:init`.
+7. Ejecutar `npm start`.
 
-## Autenticación
+Una vez iniciado el servidor, la aplicacion queda disponible en:
 
-La autenticación se implementó usando `bcrypt` y `express-session`.
-
-- `bcrypt` se utiliza para hashear las contraseñas antes de guardarlas en la base de datos.
-- `express-session` se utiliza para mantener la sesión del usuario del lado del servidor.
-- Las contraseñas no se almacenan en texto plano.
-- Durante la sesión, el identificador del usuario autenticado se conserva en la sesión para validar permisos y proteger rutas privadas.
-
-## Modelos implementados
-
-- User
-- Post
-- Media
-- Comment
-- Rating
-- Report
-- Follow
-- Notification
-- Interest
-- Collection
-- CollectionItem
-- Tag
-- PostTag
-- NotificationComment
-- NotificationRating
-- NotificationFollow
-- NotificationInterest
-- NotificationReport
-
-## Scripts disponibles
-
-- `npm start`
-  - levanta el servidor de la aplicación
-
-- `npm run db:init`
-  - verifica la conexión inicial con PostgreSQL
-
-- `npm run db:models`
-  - valida la carga de modelos Sequelize y sus asociaciones
+- `http://localhost:3000`
 
 ## Variables de entorno
 
-Ejemplo de configuración:
+Ejemplo de configuracion:
 
 ```env
 PORT=3000
@@ -110,13 +50,50 @@ DB_PASSWORD=your_password_here
 SESSION_SECRET=your_session_secret_here
 ```
 
-## Base de datos
+## Inicializacion de base de datos
 
-El esquema SQL base del proyecto se encuentra en:
+El comando `npm run db:init` realiza una inicializacion completa para evaluacion:
 
-`database/fotaza_schema.sql`
+1. Se conecta a PostgreSQL usando las variables del archivo `.env`.
+2. Elimina y recrea el esquema `public`.
+3. Ejecuta `database/fotaza_schema.sql`.
+4. Ejecuta `database/fotaza_seed.sql`.
+5. Deja la aplicacion lista para navegar con datos de prueba.
 
-Ese archivo se utiliza como referencia estructural para los modelos Sequelize y para la organización relacional del sistema.
+Importante:
+
+- No se utiliza `sequelize.sync()`.
+- La estructura sale del SQL oficial del proyecto.
+- Los datos semilla incluyen usuarios, publicaciones, media, tags, comentarios, follows, intereses, colecciones y notificaciones basicas.
+
+## Usuarios de prueba
+
+Las contrasenas de prueba estan hasheadas con bcrypt y funcionan con el login real de la aplicacion.
+
+| Rol | Usuario | Correo | Contrasena |
+| --- | --- | --- | --- |
+| regular | `ana_fotaza` | `ana.fotaza@example.com` | `fotaza123` |
+| validator | `validador_fotaza` | `validador.fotaza@example.com` | `validator123` |
+| regular | `bruno_comunidad` | `bruno.comunidad@example.com` | `comunidad123` |
+
+## Roles disponibles
+
+- `regular`
+- `validator`
+
+## Scripts disponibles
+
+- `npm start`
+  - Inicia el servidor Express en el puerto configurado.
+
+- `npm run db:init`
+  - Inicializa la base de datos desde el schema SQL oficial y carga datos semilla.
+
+- `npm run db:models`
+  - Verifica la carga de modelos Sequelize y sus asociaciones.
+
+- `npm run db:sample-post`
+  - Crea una publicacion de ejemplo utilizando el flujo del proyecto.
 
 ## Estructura principal
 
@@ -134,6 +111,7 @@ src/
 
 database/
   fotaza_schema.sql
+  fotaza_seed.sql
 
 public/
   css/
@@ -141,43 +119,36 @@ public/
   img/
 ```
 
-## Módulos principales
+## Modulos implementados
 
-- Usuarios: registro, login, logout, perfil y edición básica de perfil.
-- Publicaciones: listado, detalle, creación, edición, eliminación y asociación de media por URL.
-- Comentarios: alta de comentarios simples sobre publicaciones.
-- Valoraciones: valoración básica sobre publicaciones.
-- Denuncias: denuncias simples sobre publicaciones.
-- Seguimiento: seguimiento y dejar de seguir entre usuarios.
-- Intereses: guardado básico de publicaciones de interés.
-- Colecciones: creación de colecciones y agregado de publicaciones.
-- Tags: asociación y visualización de tags en publicaciones.
-- Notificaciones: listado de notificaciones básicas generadas por interacciones.
-- Búsqueda: búsqueda básica de usuarios y publicaciones.
+- Autenticacion de usuarios
+- Publicaciones
+- Comentarios
+- Valoraciones basicas
+- Denuncias basicas
+- Perfiles de usuario
+- Seguimiento entre usuarios
+- Intereses
+- Busqueda
+- Colecciones
+- Tags
+- Notificaciones
 
-## Estado actual
+## Informe breve de problemas solucionados
 
-El proyecto cuenta con una base funcional integrada y se encuentra en etapa de revisión final de permisos, validaciones, documentación y preparación para entrega académica.
+Durante la estabilizacion tecnica de entrega se resolvieron los siguientes puntos:
 
-## Alcance académico
+1. Inicializacion real de base de datos desde SQL
+   - El script `src/scripts/dbInit.js` paso de validar solamente la conexion a ejecutar el schema oficial y una carga controlada de datos de prueba.
 
-Durante el desarrollo se priorizó:
+2. Carga de datos de prueba
+   - Se agrego `database/fotaza_seed.sql` con usuarios de prueba, publicaciones, media, tags e interacciones minimas para que la aplicacion no quede vacia despues de la instalacion.
 
-- organización del código
-- separación de responsabilidades
-- arquitectura MVC
-- conexión real con PostgreSQL
-- modelado relacional con Sequelize
-- autenticación real con sesiones
-- funcionalidades verificables desde navegador
-- código progresivo y mantenible
+3. Correccion de edicion de perfil
+   - Se corrigio `src/controllers/userController.js` para que el formulario de edicion de perfil cargue correctamente los datos reales del usuario autenticado.
 
-## Próximos pasos
+## Observaciones de uso
 
-- revisar permisos sobre rutas protegidas
-- revisar validaciones de formularios
-- revisar manejo de registros inexistentes
-- revisar consistencia de vistas PUG
-- preparar listado final de endpoints
-- preparar instrucciones finales de instalación
-- preparar dump SQL actualizado para restauración de base de datos
+- La base de datos se reinicializa por completo cada vez que se ejecuta `npm run db:init`.
+- El proyecto utiliza renderizado del lado del servidor con Pug.
+- La configuracion se resuelve por variables de entorno.

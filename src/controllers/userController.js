@@ -106,20 +106,6 @@ const showEditForm = async (req, res, next) => {
             });
         }
 
-        if (!username || !email) {
-            return res.status(400).render("users/edit", {
-                title: "Editar perfil",
-                error: "Usuario y correo son obligatorios.",
-                profileUser,
-                values: {
-                    username,
-                    email,
-                    biography,
-                    avatar_url
-                }
-            });
-        }
-
         return res.status(200).render("users/edit", {
             title: "Editar perfil",
             error: null,

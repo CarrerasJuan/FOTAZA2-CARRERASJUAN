@@ -1,18 +1,79 @@
-const { sequelize } = require("../config/database");
+require("dotenv").config({ override: true, quiet: true });
+
+const fs = require("fs/promises");
+const path = require("path");
+const { Client } = require("pg");
+
+const schemaPath = path.resolve(__dirname, "..", "..", "database", "fotaza_schema.sql");
+const seedPath = path.resolve(__dirname, "..", "..", "database", "fotaza_seed.sql");
+
+const requiredEnvironmentVariables = [
+    "DB_HOST",
+    "DB_PORT",
+    "DB_NAME",
+    "DB_USER",
+    "DB_PASSWORD"
+];
+
+const ensureEnvironment = () => {
+    const missingVariables = requiredEnvironmentVariables.filter((variableName) => !process.env[variableName]);
+
+    if (missingVariables.length) {
+        throw new Error(`Faltan variables de entorno requeridas: ${missingVariables.join(", ")}`);
+    }
+};
+
+const readSqlFile = async (filePath) => {
+    return fs.readFile(filePath, "utf8");
+};
+
+const createClient = () => {
+    return new Client({
+        host: process.env.DB_HOST,
+        port: Number.parseInt(process.env.DB_PORT, 10),
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD
+    });
+};
+
+const resetPublicSchema = async (client) => {
+    await client.query("DROP SCHEMA IF EXISTS public CASCADE;");
+    await client.query("CREATE SCHEMA public;");
+};
 
 const initializeDatabase = async () => {
+    ensureEnvironment();
+
+    const schemaSql = await readSqlFile(schemaPath);
+    const seedSql = await readSqlFile(seedPath);
+    const client = createClient();
+
     console.log("Inicializando base de datos...");
 
     try {
-        await sequelize.authenticate();
-        console.log("Conexión a PostgreSQL verificada correctamente.");
-        console.log("Inicialización finalizada.");
+        await client.connect();
+        console.log("Conexion a PostgreSQL establecida.");
+
+        console.log("Recreando esquema publico...");
+        await resetPublicSchema(client);
+
+        console.log("Ejecutando schema SQL oficial...");
+        await client.query(schemaSql);
+
+        console.log("Cargando datos semilla...");
+        await client.query(seedSql);
+
+        console.log("Inicializacion finalizada correctamente.");
     } catch (error) {
         console.error("Error al inicializar la base de datos.");
         throw error;
     } finally {
-        await sequelize.close();
+        await client.end();
     }
 };
 
-initializeDatabase();
+initializeDatabase().catch((error) => {
+    console.error(error.message);
+    process.exit(1);
+});
