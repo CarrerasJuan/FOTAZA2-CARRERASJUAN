@@ -73,6 +73,27 @@ const syncPostTags = async (postId, rawTags) => {
 
 const hasInvalidTagLength = (rawTags) => normalizeTagNames(rawTags).some((tag) => tag.length > 50);
 
+const ACTIVE_REPORT_STATUSES = ["pending", "active"];
+
+const getActiveReportCount = async (postId) => {
+    return Report.count({
+        where: {
+            post_id: postId,
+            status: {
+                [Op.in]: ACTIVE_REPORT_STATUSES
+            }
+        }
+    });
+};
+
+const buildEditValues = (post, overrides = {}) => ({
+    title: overrides.title ?? post.title,
+    description: overrides.description ?? (post.description || ""),
+    comments_enabled: overrides.comments_enabled ?? post.comments_enabled,
+    media_url: overrides.media_url ?? (post.media && post.media.length ? post.media[0].url : ""),
+    tags: overrides.tags ?? (post.tags && post.tags.length ? post.tags.map((tag) => tag.name).join(", ") : "")
+});
+
 const index = async (req, res, next) => {
     try {
         const posts = await Post.findAll({
@@ -194,6 +215,16 @@ const show = async (req, res, next) => {
             ? ratings.find((rating) => rating.user_id === req.session.user.id) || null
             : null;
         const totalReports = post.reports ? post.reports.length : 0;
+        const hasActiveReports = post.reports
+            ? post.reports.some((report) => ACTIVE_REPORT_STATUSES.includes(report.status))
+            : false;
+        const currentUserOwnsPost = Boolean(req.session?.user && post.user_id === req.session.user.id);
+        const currentUserCanRate = Boolean(req.session?.user && !currentUserOwnsPost && !currentUserRating);
+        const currentUserCanReport = Boolean(
+            req.session?.user
+            && !currentUserOwnsPost
+            && !(post.reports || []).some((report) => report.reporter_id === req.session.user.id && ACTIVE_REPORT_STATUSES.includes(report.status))
+        );
 
         const userCollections = req.session?.user
             ? await Collection.findAll({
@@ -225,7 +256,11 @@ const show = async (req, res, next) => {
             totalReports,
             userCollections,
             currentUserInterest,
-            formError: req.query.error || null
+            formError: req.query.error || null,
+            currentUserOwnsPost,
+            currentUserCanRate,
+            currentUserCanReport,
+            isEditBlocked: currentUserOwnsPost && hasActiveReports
         });
     } catch (error) {
         return next(error);
@@ -365,18 +400,18 @@ const showEditForm = async (req, res, next) => {
             });
         }
 
+        const activeReportCount = await getActiveReportCount(post.id);
+
+        if (activeReportCount > 0) {
+            return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("No puedes editar esta publicación porque tiene denuncias activas.")}`);
+        }
+
         return res.status(200).render("posts/edit", {
             title: "Editar publicación",
             error: null,
             post,
-        values: {
-            title: post.title,
-            description: post.description || "",
-            comments_enabled: post.comments_enabled,
-            media_url: post.media && post.media.length ? post.media[0].url : "",
-            tags: post.tags && post.tags.length ? post.tags.map((tag) => tag.name).join(", ") : ""
-        }
-    });
+            values: buildEditValues(post)
+        });
     } catch (error) {
         return next(error);
     }
@@ -429,18 +464,24 @@ const update = async (req, res, next) => {
             });
         }
 
+        const activeReportCount = await getActiveReportCount(post.id);
+
+        if (activeReportCount > 0) {
+            return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("No puedes editar esta publicación porque tiene denuncias activas.")}`);
+        }
+
         if (!title) {
             return res.status(400).render("posts/edit", {
                 title: "Editar publicación",
                 error: "El título es obligatorio.",
                 post,
-                values: {
+                values: buildEditValues(post, {
                     title,
                     description,
                     comments_enabled: comments_enabled === "on",
                     media_url,
                     tags
-                }
+                })
             });
         }
 
@@ -449,13 +490,13 @@ const update = async (req, res, next) => {
                 title: "Editar publicación",
                 error: "Cada tag debe tener como máximo 50 caracteres.",
                 post,
-                values: {
+                values: buildEditValues(post, {
                     title,
                     description,
                     comments_enabled: comments_enabled === "on",
                     media_url,
                     tags
-                }
+                })
             });
         }
 

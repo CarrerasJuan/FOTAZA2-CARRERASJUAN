@@ -38,8 +38,11 @@ block content
             .footer-link-row
               a.button.button--ghost(href="/posts") Volver al listado
               a.button.button--soft(href=`/search?q=${encodeURIComponent(post.title)}`) Buscar relacionado
-              if sessionUser && post.user && sessionUser.id === post.user.id
-                a.button.button--dark(href=`/posts/${post.id}/edit`) Editar
+              if currentUserOwnsPost
+                if isEditBlocked
+                  span.text-muted No puedes editar esta publicación porque tiene denuncias activas.
+                else
+                  a.button.button--dark(href=`/posts/${post.id}/edit`) Editar
                 form(action=`/posts/${post.id}/delete` method="POST")
                   button.button.button--danger(type="submit") Eliminar
 
@@ -71,28 +74,38 @@ block content
 
             .panel.page-section
               h3 Valoración
-              p.text-muted= ratingSummary && ratingSummary.currentUserRating ? `Tu valoración actual es ${ratingSummary.currentUserRating.points} / 5` : "Todavía no valoraste esta publicación."
-              form.form-grid(action=`/posts/${post.id}/ratings` method="POST")
-                .form-field
-                  label(for="points") Puntaje
-                  select#points.form-select(name="points" required)
-                    option(value="1" selected=ratingSummary && ratingSummary.currentUserRating && ratingSummary.currentUserRating.points === 1) 1
-                    option(value="2" selected=ratingSummary && ratingSummary.currentUserRating && ratingSummary.currentUserRating.points === 2) 2
-                    option(value="3" selected=ratingSummary && ratingSummary.currentUserRating && ratingSummary.currentUserRating.points === 3) 3
-                    option(value="4" selected=ratingSummary && ratingSummary.currentUserRating && ratingSummary.currentUserRating.points === 4) 4
-                    option(value="5" selected=ratingSummary && ratingSummary.currentUserRating && ratingSummary.currentUserRating.points === 5) 5
-                button.button.button--dark(type="submit") Guardar valoración
+              if currentUserOwnsPost
+                p.text-muted No puedes valorar tu propia publicación.
+              else if ratingSummary && ratingSummary.currentUserRating
+                p.text-muted= `Ya valoraste esta publicación con ${ratingSummary.currentUserRating.points} / 5.`
+              else
+                p.text-muted Todavía no valoraste esta publicación.
+                form.form-grid(action=`/posts/${post.id}/ratings` method="POST")
+                  .form-field
+                    label(for="points") Puntaje
+                    select#points.form-select(name="points" required)
+                      option(value="1") 1
+                      option(value="2") 2
+                      option(value="3") 3
+                      option(value="4") 4
+                      option(value="5") 5
+                  button.button.button--dark(type="submit") Guardar valoración
 
             .panel
               h3 Denunciar publicación
-              form.form-grid(action=`/posts/${post.id}/reports` method="POST")
-                .form-field
-                  label(for="reason") Motivo
-                  input#reason.form-input(type="text" name="reason" maxlength="100" required)
-                .form-field
-                  label(for="description") Descripción
-                  textarea#description.form-textarea(name="description")
-                button.button.button--ghost(type="submit") Enviar denuncia
+              if currentUserOwnsPost
+                p.text-muted No puedes denunciar tu propia publicación.
+              else if !currentUserCanReport
+                p.text-muted Ya registraste una denuncia activa sobre esta publicación.
+              else
+                form.form-grid(action=`/posts/${post.id}/reports` method="POST")
+                  .form-field
+                    label(for="reason") Motivo
+                    input#reason.form-input(type="text" name="reason" maxlength="100" required)
+                  .form-field
+                    label(for="description") Descripción
+                    textarea#description.form-textarea(name="description")
+                  button.button.button--ghost(type="submit") Enviar denuncia
           else
             p.text-muted Iniciá sesión para valorar, denunciar, guardar intereses o agregar esta publicación a una colección.
             .inline-actions

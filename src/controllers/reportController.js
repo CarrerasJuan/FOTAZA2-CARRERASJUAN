@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { Post, Report, Notification, NotificationReport } = require("../models");
 
 const parsePostId = (value) => {
@@ -31,6 +32,25 @@ const reportPost = async (req, res, next) => {
             return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("Debes indicar un motivo para la denuncia.")}`);
         }
 
+        if (post.user_id === req.session.user.id) {
+            return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("No puedes denunciar tu propia publicación.")}`);
+        }
+
+        const existingReport = await Report.findOne({
+            where: {
+                reporter_id: req.session.user.id,
+                post_id: post.id,
+                status: {
+                    [Op.in]: ["pending", "active"]
+                }
+            }
+        });
+
+        if (existingReport) {
+            return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("Ya denunciaste esta publicación.")}`);
+        }
+
+        const now = new Date();
         const report = await Report.create({
             reporter_id: req.session.user.id,
             reported_user_id: post.user_id,
@@ -38,26 +58,30 @@ const reportPost = async (req, res, next) => {
             comment_id: null,
             reason,
             description: description || null,
-            status: "pending"
+            status: "pending",
+            created_at: now,
+            updated_at: now
         });
 
-        if (post.user_id && post.user_id !== req.session.user.id) {
-            const notification = await Notification.create({
-                user_id: post.user_id,
-                actor_id: req.session.user.id,
-                type: "report",
-                is_read: false,
-                created_at: new Date()
-            });
+        const notification = await Notification.create({
+            user_id: post.user_id,
+            actor_id: req.session.user.id,
+            type: "report",
+            is_read: false,
+            created_at: now
+        });
 
-            await NotificationReport.create({
-                notification_id: notification.id,
-                report_id: report.id
-            });
-        }
+        await NotificationReport.create({
+            notification_id: notification.id,
+            report_id: report.id
+        });
 
         return res.redirect(`/posts/${post.id}`);
     } catch (error) {
+        if (error.name === "SequelizeUniqueConstraintError") {
+            return res.redirect(`/posts/${postId}?error=${encodeURIComponent("Ya denunciaste esta publicación.")}`);
+        }
+
         return next(error);
     }
 };
