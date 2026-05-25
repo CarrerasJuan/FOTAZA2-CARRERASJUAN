@@ -1,0 +1,31 @@
+mixin navLink(href, label)
+  a.navbar__link(href=href)= label
+
+header.navbar
+  .navbar__inner
+    a.navbar__brand(href="/")
+      span.navbar__brand-mark F
+      span.navbar__brand-text Fotaza
+
+    form.navbar__search(action="/search" method="GET")
+      label.sr-only(for="navbar-search") Buscar
+      input#navbar-search.navbar__search-input(
+        type="text"
+        name="q"
+        placeholder="Buscar publicaciones o usuarios"
+        value=typeof query !== "undefined" ? query : ""
+      )
+      button.button.button--ghost.navbar__search-button(type="submit") Buscar
+
+    nav.navbar__menu
+      +navLink("/posts", "Publicaciones")
+      if sessionUser
+        +navLink(`/users/${sessionUser.id}`, "Mi perfil")
+        +navLink("/collections", "Colecciones")
+        +navLink("/interests", "Intereses")
+        +navLink("/notifications", "Notificaciones")
+        form.navbar__logout(action="/auth/logout" method="POST")
+          button.button.button--dark.button--small(type="submit") Cerrar sesión
+      else
+        +navLink("/auth/login", "Iniciar sesión")
+        a.button.button--dark.button--small(href="/auth/register") Crear cuenta

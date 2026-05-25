@@ -1,29 +1,30 @@
-doctype html
-html(lang="es")
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1.0")
-    title= title
-  body
-    h1 Registro de usuario
+extends ../layouts/main
 
-    if error
-      p= error
+block content
+  .auth-shell
+    .auth-card
+      span.section-eyebrow Registro
+      h1 Crear cuenta en Fotaza
+      p.section-description Completá los datos básicos para acceder al sistema y comenzar a interactuar con publicaciones y perfiles.
 
-    form(action="/auth/register" method="POST")
-      div
-        label(for="username") Nombre de usuario
-        input#username(type="text" name="username" required value=values.username)
+      if error
+        .alert= error
 
-      div
-        label(for="email") Correo electrónico
-        input#email(type="email" name="email" required value=values.email)
+      form.form-grid(action="/auth/register" method="POST")
+        .form-field
+          label(for="username") Nombre de usuario
+          input#username.form-input(type="text" name="username" required value=values.username)
 
-      div
-        label(for="password") Contraseña
-        input#password(type="password" name="password" required)
+        .form-field
+          label(for="email") Correo electrónico
+          input#email.form-input(type="email" name="email" required value=values.email)
 
-      button(type="submit") Registrarse
+        .form-field
+          label(for="password") Contraseña
+          input#password.form-input(type="password" name="password" required)
 
-    p
-      a(href="/auth/login") Volver al login
+        button.button.button--dark(type="submit") Registrarse
+
+      .footer-link-row
+        a.button.button--ghost(href="/auth/login") Ya tengo cuenta
+        a.button.button--soft(href="/posts") Volver a publicaciones

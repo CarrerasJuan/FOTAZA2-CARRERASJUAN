@@ -1,33 +1,32 @@
-doctype html
-html(lang="es")
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1.0")
-    title= title
-  body
-    h1 Editar perfil
+extends ../layouts/main
 
-    if error
-      p= error
+block content
+  section.page-section.form-shell
+    .panel
+      span.section-eyebrow Perfil
+      h1 Editar perfil
+      p.section-description Actualizá los datos visibles de tu cuenta manteniendo el mismo flujo de autenticación.
 
-    form(action=`/users/${profileUser.id}/edit` method="POST")
-      div
-        label(for="username") Usuario
-        input#username(type="text" name="username" required maxlength="50" value=values.username)
+      if error
+        .alert= error
 
-      div
-        label(for="email") Correo
-        input#email(type="email" name="email" required maxlength="100" value=values.email)
+      form.form-grid(action=`/users/${profileUser.id}/edit` method="POST")
+        .form-field
+          label(for="username") Usuario
+          input#username.form-input(type="text" name="username" required maxlength="50" value=values.username)
 
-      div
-        label(for="biography") Biografía
-        textarea#biography(name="biography")= values.biography
+        .form-field
+          label(for="email") Correo
+          input#email.form-input(type="email" name="email" required maxlength="100" value=values.email)
 
-      div
-        label(for="avatar_url") URL de avatar
-        input#avatar_url(type="url" name="avatar_url" maxlength="255" value=values.avatar_url)
+        .form-field
+          label(for="biography") Biografía
+          textarea#biography.form-textarea(name="biography")= values.biography
 
-      button(type="submit") Guardar cambios
+        .form-field
+          label(for="avatar_url") URL de avatar
+          input#avatar_url.form-input(type="url" name="avatar_url" maxlength="255" value=values.avatar_url)
 
-    p
-      a(href=`/users/${profileUser.id}`) Volver al perfil
+        .inline-actions
+          button.button.button--dark(type="submit") Guardar cambios
+          a.button.button--ghost(href=`/users/${profileUser.id}`) Volver al perfil

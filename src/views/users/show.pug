@@ -1,59 +1,66 @@
-doctype html
-html(lang="es")
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1.0")
-    title= title
-  body
-    if profileUser
-      h1= profileUser.username
-      p Correo: #{profileUser.email}
-      p Estado: #{profileUser.status}
-      p Miembro desde: #{profileUser.created_at}
-      p Seguidores: #{followSummary ? followSummary.followersCount : 0}
-      p Seguidos: #{followSummary ? followSummary.followingCount : 0}
+extends ../layouts/main
 
-      if profileUser.biography
-        p= profileUser.biography
+block content
+  if profileUser
+    section.page-section
+      .profile-card
+        .profile-card__avatar
+          if profileUser.avatar_url
+            img(src=profileUser.avatar_url alt=profileUser.username)
+          else
+            span= profileUser.username ? profileUser.username.charAt(0).toUpperCase() : "U"
+        .profile-card__body
+          span.section-eyebrow Perfil de usuario
+          h1.profile-card__name= profileUser.username
+          .profile-meta
+            span= profileUser.email
+            span= `Estado: ${profileUser.status}`
+            span= `Miembro desde: ${profileUser.created_at}`
+          if profileUser.biography
+            p.section-description= profileUser.biography
+          .profile-stats
+            .profile-stat
+              strong= followSummary ? followSummary.followersCount : 0
+              p.text-muted Seguidores
+            .profile-stat
+              strong= followSummary ? followSummary.followingCount : 0
+              p.text-muted Seguidos
+            .profile-stat
+              strong= profileUser.posts ? profileUser.posts.length : 0
+              p.text-muted Publicaciones
+          .inline-actions
+            if sessionUser && sessionUser.id === profileUser.id
+              a.button.button--dark(href=`/users/${profileUser.id}/edit`) Editar perfil
+              a.button.button--ghost(href="/interests") Ver mis intereses
+            else if sessionUser && sessionUser.id !== profileUser.id
+              if followSummary && followSummary.isFollowing
+                form(action=`/users/${profileUser.id}/unfollow` method="POST")
+                  button.button.button--ghost(type="submit") Dejar de seguir
+              else
+                form(action=`/users/${profileUser.id}/follow` method="POST")
+                  button.button.button--dark(type="submit") Seguir
+            a.button.button--soft(href="/posts") Volver a publicaciones
 
-      if profileUser.avatar_url
-        img(src=profileUser.avatar_url alt=profileUser.username width="180")
-
-      if sessionUser && sessionUser.id === profileUser.id
-        p
-          a(href=`/users/${profileUser.id}/edit`) Editar perfil
-
-      if sessionUser && sessionUser.id !== profileUser.id
-        if followSummary && followSummary.isFollowing
-          form(action=`/users/${profileUser.id}/unfollow` method="POST")
-            button(type="submit") Dejar de seguir
+    section.page-section
+      .panel
+        h2 Publicaciones del usuario
+        if profileUser.posts && profileUser.posts.length
+          .grid.grid--cards
+            each post in profileUser.posts
+              article.feed-card
+                .feed-card__media
+                  if post.media && post.media.length && post.media[0].type === "image"
+                    img(src=post.media[0].url alt=post.title)
+                .feed-card__body
+                  h3.feed-card__title= post.title
+                  if post.description
+                    p.text-muted= post.description
+                  a.button.button--ghost.button--small(href=`/posts/${post.id}`) Ver publicación
         else
-          form(action=`/users/${profileUser.id}/follow` method="POST")
-            button(type="submit") Seguir
-
-      h2 Publicaciones del usuario
-      if profileUser.posts && profileUser.posts.length
-        each post in profileUser.posts
-          article
-            h3= post.title
-            if post.description
-              p= post.description
-            p
-              a(href=`/posts/${post.id}`) Ver publicación
-            if post.media && post.media.length
-              each item in post.media
-                if item.type === "image"
-                  img(src=item.url alt=post.title width="220")
-      else
-        p Este usuario todavía no tiene publicaciones registradas.
-
-      p
-        a(href="/posts") Volver a publicaciones
-      if sessionUser
-        p
-          a(href="/interests") Ver mis intereses
-    else
+          .empty-state
+            p Este usuario todavía no tiene publicaciones registradas.
+  else
+    .empty-state
       h1 Usuario no encontrado
-      p No existe un usuario registrado con el identificador solicitado.
-      p
-        a(href="/posts") Volver a publicaciones
+      p.text-muted No existe un usuario registrado con el identificador solicitado.
+      a.button.button--ghost(href="/posts") Volver a publicaciones

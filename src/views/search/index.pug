@@ -1,46 +1,55 @@
-doctype html
-html(lang="es")
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1.0")
-    title= title
-  body
-    h1 Búsqueda
+extends ../layouts/main
 
-    form(action="/search" method="GET")
-      div
-        label(for="q") Término de búsqueda
-        input#q(type="text" name="q" value=query)
-      button(type="submit") Buscar
+block content
+  section.page-section
+    .panel
+      span.section-eyebrow Descubrimiento
+      h1 Búsqueda
+      p.section-description Buscá usuarios o publicaciones por título, descripción o datos básicos de cuenta.
 
-    if query
-      h2 Usuarios encontrados
-      if users.length
-        each user in users
-          article
-            h3= user.username
-            p= user.email
-            p
-              a(href=`/users/${user.id}`) Ver perfil
-      else
-        p No se encontraron usuarios para la búsqueda ingresada.
+      form.form-grid(action="/search" method="GET")
+        .form-field
+          label(for="q") Término de búsqueda
+          input#q.form-input(type="text" name="q" value=query placeholder="Ej. retrato, urbano, ana")
+        .inline-actions
+          button.button.button--dark(type="submit") Buscar
+          a.button.button--ghost(href="/posts") Volver a publicaciones
 
-      h2 Publicaciones encontradas
-      if posts.length
-        each post in posts
-          article
-            h3= post.title
-            p Autor: #{post.user ? post.user.username : "Sin usuario"}
-            if post.description
-              p= post.description
-            if post.tags && post.tags.length
-              p Etiquetas: #{post.tags.map((tag) => tag.name).join(", ")}
-            p
-              a(href=`/posts/${post.id}`) Ver publicación
-      else
-        p No se encontraron publicaciones para la búsqueda ingresada.
-    else
+  if query
+    section.page-section.grid.grid--two
+      .panel
+        h2 Usuarios encontrados
+        if users.length
+          .list-clean
+            each user in users
+              article.search-card
+                .search-card__body
+                  h3.search-card__title= user.username
+                  p.text-muted= user.email
+                  a.button.button--ghost.button--small(href=`/users/${user.id}`) Ver perfil
+        else
+          .empty-state
+            p No se encontraron usuarios para la búsqueda ingresada.
+
+      .panel
+        h2 Publicaciones encontradas
+        if posts.length
+          .list-clean
+            each post in posts
+              article.search-card
+                .search-card__body
+                  h3.search-card__title= post.title
+                  p.text-muted= post.user ? `Por ${post.user.username}` : "Sin usuario"
+                  if post.description
+                    p.text-muted= post.description
+                  if post.tags && post.tags.length
+                    .badge-row
+                      each tag in post.tags
+                        span.badge= tag.name
+                  a.button.button--ghost.button--small(href=`/posts/${post.id}`) Ver publicación
+        else
+          .empty-state
+            p No se encontraron publicaciones para la búsqueda ingresada.
+  else
+    .empty-state
       p Ingresá un término para buscar usuarios o publicaciones.
-
-    p
-      a(href="/posts") Volver a publicaciones

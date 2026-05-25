@@ -1,23 +1,95 @@
-doctype html
-html(lang="es")
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1.0")
-    title Fotaza
-  body
-    h1 Fotaza
-    p Plataforma comunitaria de fotografias y videos
-    p
-      a(href="/posts") Ver publicaciones
-    if sessionUser
-      p
-        a(href=`/users/${sessionUser.id}`) Ver mi perfil
-      p
-        a(href="/notifications") Ver notificaciones
-      form(action="/auth/logout" method="POST")
-        button(type="submit") Cerrar sesión
-    else
-      p
-        a(href="/auth/login") Iniciar sesión
-      p
-        a(href="/auth/register") Crear cuenta
+extends layouts/main
+
+block content
+  section.hero.page-section
+    .hero__content
+      span.hero__eyebrow Plataforma visual comunitaria
+      h1.hero__title
+        | Descubrí, compartí y organizá
+        br
+        span.hero__title-accent fotografías y videos
+      p.hero__description
+        | Fotaza reúne publicaciones visuales, perfiles, colecciones, intereses y navegación social
+        |  en una experiencia simple para explorar contenido y participar con tu propia cuenta.
+      .hero__actions
+        a.button.button--dark(href="/posts") Ver publicaciones
+        if sessionUser
+          a.button.button--ghost(href=`/users/${sessionUser.id}`) Ir a mi perfil
+        else
+          a.button.button--ghost(href="/auth/register") Crear cuenta
+    .hero__visual
+      if featuredPosts && featuredPosts.length
+        .hero__mosaic
+          .hero__feature
+            - const mainPost = featuredPosts[0]
+            .hero__feature-card
+              if mainPost.media && mainPost.media.length && mainPost.media[0].type === "image"
+                img(src=mainPost.media[0].url alt=mainPost.title)
+              .hero__card-overlay
+                strong= mainPost.title
+                p= mainPost.user ? `Por ${mainPost.user.username}` : "Publicación destacada"
+          .hero__column
+            each post in featuredPosts.slice(1, 4)
+              .hero__mini-card
+                if post.media && post.media.length && post.media[0].type === "image"
+                  img(src=post.media[0].url alt=post.title)
+                .hero__card-overlay
+                  strong= post.title
+      else
+        .hero__feature-card
+          .hero__card-overlay
+            strong Tu próximo contenido empieza acá
+            p Publicá imágenes, organizá colecciones y explorá perfiles dentro de Fotaza.
+
+  section.page-section
+    .panel
+      span.section-eyebrow Navegación principal
+      h2 Accesos rápidos
+      p.section-description
+        | La aplicación ya integra autenticación, publicaciones, perfiles, intereses, colecciones y notificaciones.
+      .grid.grid--cards
+        a.feed-card(href="/posts")
+          .feed-card__body
+            h3.feed-card__title Publicaciones
+            p.text-muted Explorá el feed, abrí detalles y navegá por tags relacionados.
+        if sessionUser
+          a.feed-card(href=`/users/${sessionUser.id}`)
+            .feed-card__body
+              h3.feed-card__title Mi perfil
+              p.text-muted Revisá tu perfil, tus publicaciones y accesos personales.
+          a.feed-card(href="/collections")
+            .feed-card__body
+              h3.feed-card__title Colecciones
+              p.text-muted Agrupá publicaciones y consultá tus colecciones guardadas.
+          a.feed-card(href="/notifications")
+            .feed-card__body
+              h3.feed-card__title Notificaciones
+              p.text-muted Consultá interacciones recientes sobre tu cuenta y tus publicaciones.
+        else
+          a.feed-card(href="/auth/login")
+            .feed-card__body
+              h3.feed-card__title Iniciar sesión
+              p.text-muted Accedé para comentar, valorar, seguir usuarios y guardar intereses.
+          a.feed-card(href="/auth/register")
+            .feed-card__body
+              h3.feed-card__title Crear cuenta
+              p.text-muted Registrate para comenzar a publicar y participar en la plataforma.
+
+  if featuredTags && featuredTags.length
+    section.page-section
+      .panel
+        span.section-eyebrow Categorías
+        h2 Intereses y tags
+        p.section-description
+          | Algunos tags disponibles dentro del contenido actual.
+        .chip-row
+          each tag in featuredTags
+            a.chip.chip--link(href=`/posts/tags/${tag.id}`)= tag.name
+
+  section.page-section
+    .panel
+      span.section-eyebrow Estado del proyecto
+      h2 Base funcional integrada
+      p.section-description
+        | Fotaza ya cuenta con una base funcional completa sobre Express, PUG, PostgreSQL y Sequelize,
+        |  con autenticación, publicaciones, perfiles, colecciones e interacciones sociales básicas.

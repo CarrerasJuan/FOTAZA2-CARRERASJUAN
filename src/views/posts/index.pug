@@ -1,61 +1,54 @@
-doctype html
-html(lang="es")
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1.0")
-    title= title
-  body
-    h1 Publicaciones
-    if sessionUser
-      p
-        a(href=`/users/${sessionUser.id}`) Ver mi perfil
-      p
-        a(href="/notifications") Ver notificaciones
-      form(action="/auth/logout" method="POST")
-        button(type="submit") Cerrar sesión
-    else
-      p
-        a(href="/auth/login") Iniciar sesión
-      p
-        a(href="/auth/register") Crear cuenta
-    if currentTag
-      p Filtrando por tag: #{currentTag.name}
-      p
-        a(href="/posts") Ver todas las publicaciones
+extends ../layouts/main
 
+block content
+  section.page-section
+    .panel
+      span.section-eyebrow Feed visual
+      h1 Publicaciones
+      p.section-description
+        | Explorá el contenido publicado por la comunidad, abrí detalles, seguí autores y navegá por tags.
+      .inline-actions
+        if sessionUser
+          a.button.button--dark(href="/posts/create") Crear publicación
+        if currentTag
+          a.button.button--ghost(href="/posts") Quitar filtro
+
+  if currentTag
+    section.page-section
+      .panel
+        span.section-eyebrow Tag activo
+        h2= currentTag.name
+        p.text-muted Estás viendo publicaciones relacionadas con este tag.
+
+  section.page-section
     if posts.length
-      each post in posts
-        article
-          h2= post.title
-          p Autor: #{post.user ? post.user.username : "Sin usuario"}
-
-          if post.description
-            p= post.description
-
-          p Estado: #{post.status}
-          p Comentarios habilitados: #{post.comments_enabled ? "Sí" : "No"}
-          p Valoraciones: #{post.ratings && post.ratings.length ? post.ratings.length : 0}
-
-          if post.tags && post.tags.length
-            p
-              | Tags:
-              each tag, index in post.tags
-                | 
-                a(href=`/posts/tags/${tag.id}`)= tag.name
-                if index < post.tags.length - 1
-                  | ,
-
-          p
-            a(href=`/posts/${post.id}`) Ver detalle
-
-          if post.media && post.media.length
-            h3 Recursos multimedia
-            ul
-              each item in post.media
-                li
-                  | #{item.type} - #{item.url}
-                  if item.type === "image"
-                    div
-                      img(src=item.url alt=post.title width="240")
+      .grid.grid--cards
+        each post in posts
+          article.feed-card
+            .feed-card__media
+              if post.media && post.media.length && post.media[0].type === "image"
+                img(src=post.media[0].url alt=post.title)
+              else
+                .hero__mini-card
+                  .hero__card-overlay
+                    strong= post.title
+            .feed-card__body
+              h2.feed-card__title= post.title
+              .feed-meta
+                span= post.user ? `Por ${post.user.username}` : "Sin usuario"
+                span= `Valoraciones: ${post.ratings && post.ratings.length ? post.ratings.length : 0}`
+                span= post.comments_enabled ? "Comentarios habilitados" : "Comentarios cerrados"
+              if post.description
+                p.text-muted= post.description
+              if post.tags && post.tags.length
+                .badge-row
+                  each tag in post.tags
+                    a.badge.badge--link(href=`/posts/tags/${tag.id}`)= tag.name
+              .inline-actions
+                a.button.button--dark.button--small(href=`/posts/${post.id}`) Ver detalle
     else
-      p No hay publicaciones registradas por el momento.
+      .empty-state
+        h2 Todavía no hay publicaciones
+        p.text-muted Cuando existan registros, el feed las mostrará acá con sus datos principales.
+        if sessionUser
+          a.button.button--dark(href="/posts/create") Publicar primero

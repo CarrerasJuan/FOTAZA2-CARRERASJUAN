@@ -1,21 +1,20 @@
-doctype html
-html(lang="es")
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1.0")
-    title= title
-  body
-    h1 Crear colección
+extends ../layouts/main
 
-    if error
-      p= error
+block content
+  section.page-section.form-shell
+    .panel
+      span.section-eyebrow Nueva colección
+      h1 Crear colección
+      p.section-description Definí un nombre simple para organizar publicaciones guardadas.
 
-    form(action="/collections" method="POST")
-      div
-        label(for="name") Nombre
-        input#name(type="text" name="name" required maxlength="80" value=values.name)
+      if error
+        .alert= error
 
-      button(type="submit") Guardar colección
+      form.form-grid(action="/collections" method="POST")
+        .form-field
+          label(for="name") Nombre
+          input#name.form-input(type="text" name="name" required maxlength="80" value=values.name)
 
-    p
-      a(href="/collections") Volver a colecciones
+        .inline-actions
+          button.button.button--dark(type="submit") Guardar colección
+          a.button.button--ghost(href="/collections") Volver a colecciones

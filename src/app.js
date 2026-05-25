@@ -10,6 +10,7 @@ const collectionRoutes = require("./routes/collectionRoutes");
 const validatorRoutes = require("./routes/validatorRoutes");
 const interestRoutes = require("./routes/interestRoutes");
 const { notFoundHandler, errorHandler } = require("./middlewares/handleErrors");
+const { Post, User, Media, Tag } = require("./models");
 
 const app = express();
 
@@ -31,8 +32,47 @@ app.use((req, res, next) => {
 });
 app.use(express.static(path.join(__dirname, "..", "public")));
 
-app.get("/", (req, res) => {
-    res.render("index");
+app.get("/", async (req, res, next) => {
+    try {
+        const featuredPosts = await Post.findAll({
+            include: [
+                {
+                    model: User,
+                    as: "user",
+                    attributes: ["id", "username"]
+                },
+                {
+                    model: Media,
+                    as: "media",
+                    attributes: ["id", "type", "url"]
+                },
+                {
+                    model: Tag,
+                    as: "tags",
+                    attributes: ["id", "name"],
+                    through: {
+                        attributes: []
+                    }
+                }
+            ],
+            order: [["created_at", "DESC"]],
+            limit: 4
+        });
+
+        const featuredTags = await Tag.findAll({
+            attributes: ["id", "name"],
+            order: [["created_at", "DESC"]],
+            limit: 8
+        });
+
+        res.render("index", {
+            title: "Inicio",
+            featuredPosts,
+            featuredTags
+        });
+    } catch (error) {
+        next(error);
+    }
 });
 
 app.get("/health", (req, res) => {

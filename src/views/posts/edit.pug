@@ -1,41 +1,36 @@
-doctype html
-html(lang="es")
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1.0")
-    title= title
-  body
-    h1 Editar publicación
+extends ../layouts/main
 
-    if error
-      p= error
+block content
+  section.page-section.form-shell
+    .panel
+      span.section-eyebrow Gestión de contenido
+      h1 Editar publicación
+      p.section-description Ajustá título, descripción, media, tags y estado de comentarios de tu publicación.
 
-    form(action=`/posts/${post.id}/edit` method="POST")
-      div
-        label(for="title") Título
-        input#title(type="text" name="title" required value=values.title)
+      if error
+        .alert= error
 
-      div
-        label(for="description") Descripción
-        textarea#description(name="description")= values.description
+      form.form-grid(action=`/posts/${post.id}/edit` method="POST")
+        .form-field
+          label(for="title") Título
+          input#title.form-input(type="text" name="title" required value=values.title)
 
-      div
-        label(for="media_url") URL de imagen
-        input#media_url(type="url" name="media_url" value=values.media_url)
+        .form-field
+          label(for="description") Descripción
+          textarea#description.form-textarea(name="description")= values.description
 
-      div
-        label(for="tags") Tags
-        input#tags(type="text" name="tags" value=values.tags placeholder="paisaje, noche, urbano")
+        .form-field
+          label(for="media_url") URL de imagen
+          input#media_url.form-input(type="url" name="media_url" value=values.media_url)
 
-      div
-        label(for="comments_enabled") Permitir comentarios
-        input#comments_enabled(
-          type="checkbox"
-          name="comments_enabled"
-          checked=values.comments_enabled
-        )
+        .form-field
+          label(for="tags") Tags
+          input#tags.form-input(type="text" name="tags" value=values.tags placeholder="paisaje, noche, urbano")
 
-      button(type="submit") Guardar cambios
+        label.form-checkbox(for="comments_enabled")
+          input#comments_enabled(type="checkbox" name="comments_enabled" checked=values.comments_enabled)
+          span Permitir comentarios
 
-    p
-      a(href=`/posts/${post.id}`) Volver al detalle
+        .inline-actions
+          button.button.button--dark(type="submit") Guardar cambios
+          a.button.button--ghost(href=`/posts/${post.id}`) Volver al detalle

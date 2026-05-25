@@ -1,26 +1,27 @@
-doctype html
-html(lang="es")
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1.0")
-    title= title
-  body
-    h1 Mis intereses
+extends ../layouts/main
 
+block content
+  section.page-section
+    .panel
+      span.section-eyebrow Curación personal
+      h1 Mis intereses
+      p.section-description Acá se listan las publicaciones que guardaste como interés para revisarlas más tarde.
+      .inline-actions
+        a.button.button--ghost(href="/posts") Volver a publicaciones
+
+  section.page-section
     if interests.length
-      each interest in interests
-        if interest.post
-          article
-            h2= interest.post.title
-            p Autor: #{interest.post.user ? interest.post.user.username : "Sin usuario"}
-            p
-              a(href=`/posts/${interest.post.id}`) Ver publicación
-            if interest.post.media && interest.post.media.length
-              each item in interest.post.media
-                if item.type === "image"
-                  img(src=item.url alt=interest.post.title width="220")
+      .grid.grid--cards
+        each interest in interests
+          if interest.post
+            article.feed-card
+              .feed-card__media
+                if interest.post.media && interest.post.media.length && interest.post.media[0].type === "image"
+                  img(src=interest.post.media[0].url alt=interest.post.title)
+              .feed-card__body
+                h2.feed-card__title= interest.post.title
+                p.text-muted= interest.post.user ? `Por ${interest.post.user.username}` : "Sin usuario"
+                a.button.button--ghost.button--small(href=`/posts/${interest.post.id}`) Ver publicación
     else
-      p Todavía no guardaste publicaciones en intereses.
-
-    p
-      a(href="/posts") Volver a publicaciones
+      .empty-state
+        p Todavía no guardaste publicaciones en intereses.
