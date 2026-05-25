@@ -24,6 +24,8 @@ header.navbar
         +navLink("/collections", "Colecciones")
         +navLink("/interests", "Intereses")
         +navLink("/notifications", "Notificaciones")
+        if sessionUser.role === "validator"
+          +navLink("/validator", "Validador")
         form.navbar__logout(action="/auth/logout" method="POST")
           button.button.button--dark.button--small(type="submit") Cerrar sesión
       else

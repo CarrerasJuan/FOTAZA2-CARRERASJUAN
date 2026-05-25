@@ -45,6 +45,11 @@ const initializePost = (sequelize) => {
             sequelize,
             modelName: "Post",
             tableName: "posts",
+            defaultScope: {
+                where: {
+                    status: "active"
+                }
+            },
             timestamps: true,
             createdAt: "created_at",
             updatedAt: "updated_at"

@@ -9,6 +9,10 @@ const requireRole = (...allowedRoles) => {
         }
 
         if (!allowedRoles.includes(currentUser.role)) {
+            if (req.accepts("html")) {
+                return res.status(403).send("No tienes permisos suficientes para acceder a este recurso.");
+            }
+
             return res.status(403).json({
                 message: "No tienes permisos suficientes para realizar esta acción."
             });

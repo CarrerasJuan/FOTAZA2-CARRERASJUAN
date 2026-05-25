@@ -1,0 +1,40 @@
+extends ../layouts/main
+
+block content
+  section.page-section
+    .panel
+      span.section-eyebrow Moderación
+      h1 Panel de validación
+      p.section-description Revisá publicaciones con más de 3 denunciantes distintos y aplicá acciones de moderación.
+
+      if feedbackMessage
+        .alert= feedbackMessage
+
+      if flaggedPosts && flaggedPosts.length
+        .stack-actions
+          each post in flaggedPosts
+            article.panel
+              h2= `#${post.id} - ${post.title}`
+              p.text-muted= `Autor: ${post.author ? post.author.username : "Desconocido"}`
+              p.text-muted= `Estado actual: ${post.status}`
+              p.text-muted= `Denunciantes distintos: ${post.distinctReporters}`
+
+              if post.topReasons && post.topReasons.length
+                .form-field
+                  strong Motivos principales
+                  ul
+                    each topReason in post.topReasons
+                      li= `${topReason.reason} (${topReason.count})`
+              else
+                p.text-muted No hay motivos agregados para mostrar.
+
+              .inline-actions
+                a.button.button--ghost(href=`/posts/${post.id}`) Ver publicación
+                form(action=`/validator/posts/${post.id}/dismiss-reports` method="POST")
+                  button.button.button--soft(type="submit") Desestimar denuncias
+                form(action=`/validator/posts/${post.id}/deactivate` method="POST")
+                  button.button.button--danger(type="submit") Dar de baja publicación
+      else
+        .empty-state
+          h2 Sin publicaciones críticas
+          p.text-muted No hay publicaciones con más de 3 denunciantes distintos pendientes de revisión.

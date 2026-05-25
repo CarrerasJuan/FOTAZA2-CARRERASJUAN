@@ -55,7 +55,8 @@ const register = async (req, res, next) => {
             id: user.id,
             username: user.username,
             email: user.email,
-            role: user.role
+            role: user.role,
+            status: user.status
         };
 
         return res.redirect("/posts");
@@ -104,6 +105,16 @@ const login = async (req, res, next) => {
             });
         }
 
+        if (user.status !== "active") {
+            return res.status(403).render("auth/login", {
+                title: "Iniciar sesión",
+                error: "Tu cuenta está inactiva y no puede iniciar sesión.",
+                values: {
+                    email
+                }
+            });
+        }
+
         const isValidPassword = await bcrypt.compare(password, user.password);
 
         if (!isValidPassword) {
@@ -120,7 +131,8 @@ const login = async (req, res, next) => {
             id: user.id,
             username: user.username,
             email: user.email,
-            role: user.role
+            role: user.role,
+            status: user.status
         };
 
         return res.redirect("/posts");
