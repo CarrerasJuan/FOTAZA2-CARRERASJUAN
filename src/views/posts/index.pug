@@ -25,8 +25,12 @@ block content
         each post in posts
           article.feed-card
             .feed-card__media
-              if post.media && post.media.length && post.media[0].type === "image"
-                img(src=post.media[0].url alt=post.title)
+              if post.canShowPrimaryMedia && post.primaryMedia && post.primaryMedia.type === "image"
+                img(src=post.primaryMedia.url alt=post.title)
+              else if post.isMediaRestrictedForAnonymous
+                .media-guard
+                  strong Contenido restringido
+                  p.text-muted= post.mediaRestrictionMessage
               else
                 .hero__mini-card
                   .hero__card-overlay

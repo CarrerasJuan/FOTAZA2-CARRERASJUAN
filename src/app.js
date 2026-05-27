@@ -11,6 +11,7 @@ const validatorRoutes = require("./routes/validatorRoutes");
 const interestRoutes = require("./routes/interestRoutes");
 const { notFoundHandler, errorHandler } = require("./middlewares/handleErrors");
 const { Post, User, Media, Tag } = require("./models");
+const { applyMediaVisibilityToPosts } = require("./utils/mediaVisibility");
 
 const app = express();
 
@@ -44,7 +45,7 @@ app.get("/", async (req, res, next) => {
                 {
                     model: Media,
                     as: "media",
-                    attributes: ["id", "type", "url"]
+                    attributes: ["id", "type", "url", "license", "watermark_text"]
                 },
                 {
                     model: Tag,
@@ -58,6 +59,7 @@ app.get("/", async (req, res, next) => {
             order: [["created_at", "DESC"]],
             limit: 4
         });
+        const visibleFeaturedPosts = applyMediaVisibilityToPosts(featuredPosts, Boolean(req.session?.user));
 
         const featuredTags = await Tag.findAll({
             attributes: ["id", "name"],
@@ -67,7 +69,7 @@ app.get("/", async (req, res, next) => {
 
         res.render("index", {
             title: "Inicio",
-            featuredPosts,
+            featuredPosts: visibleFeaturedPosts,
             featuredTags
         });
     } catch (error) {

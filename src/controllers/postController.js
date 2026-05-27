@@ -1,5 +1,6 @@
 const { Op } = require("sequelize");
 const { Post, User, Media, Comment, Rating, Report, Collection, Interest, Tag, PostTag, Follow } = require("../models");
+const { applyMediaVisibilityToPost, applyMediaVisibilityToPosts } = require("../utils/mediaVisibility");
 
 const parsePostId = (value) => {
     const parsedId = Number.parseInt(value, 10);
@@ -150,10 +151,11 @@ const index = async (req, res, next) => {
             include: postFeedInclude,
             order: [["created_at", "DESC"]]
         });
+        const visiblePosts = applyMediaVisibilityToPosts(posts, Boolean(req.session?.user));
 
         return res.status(200).render("posts/index", {
             title: "Publicaciones",
-            posts,
+            posts: visiblePosts,
             currentTag: null,
             feedDescription: "Explorá el contenido publicado por la comunidad, abrí detalles, seguí autores y navegá por tags.",
             emptyTitle: "Todavía no hay publicaciones",
@@ -273,6 +275,7 @@ const show = async (req, res, next) => {
                 }
             })
             : null;
+        applyMediaVisibilityToPost(post, Boolean(req.session?.user));
 
         return res.status(200).render("posts/show", {
             title: post.title,
@@ -337,10 +340,11 @@ const followingFeed = async (req, res, next) => {
                 order: [["created_at", "DESC"]]
             })
             : [];
+        const visiblePosts = applyMediaVisibilityToPosts(posts, true);
 
         return res.status(200).render("posts/index", {
             title: "Publicaciones de seguidos",
-            posts,
+            posts: visiblePosts,
             currentTag: null,
             feedDescription: "Revisá solo las publicaciones activas de los usuarios que seguís dentro de la comunidad.",
             emptyTitle: "Todavía no hay publicaciones de usuarios seguidos",
@@ -787,10 +791,11 @@ const showByTag = async (req, res, next) => {
             ],
             order: [["created_at", "DESC"]]
         });
+        const visiblePosts = applyMediaVisibilityToPosts(posts, Boolean(req.session?.user));
 
         return res.status(200).render("posts/index", {
             title: `Publicaciones con tag: ${tag.name}`,
-            posts,
+            posts: visiblePosts,
             currentTag: tag,
             feedDescription: "Explorá el contenido publicado por la comunidad, abrí detalles, seguí autores y navegá por tags.",
             emptyTitle: "Todavía no hay publicaciones",

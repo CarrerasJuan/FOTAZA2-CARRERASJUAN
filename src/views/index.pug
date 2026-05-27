@@ -23,16 +23,24 @@ block content
           .hero__feature
             - const mainPost = featuredPosts[0]
             .hero__feature-card
-              if mainPost.media && mainPost.media.length && mainPost.media[0].type === "image"
-                img(src=mainPost.media[0].url alt=mainPost.title)
+              if mainPost.canShowPrimaryMedia && mainPost.primaryMedia && mainPost.primaryMedia.type === "image"
+                img(src=mainPost.primaryMedia.url alt=mainPost.title)
+              else if mainPost.isMediaRestrictedForAnonymous
+                .media-guard
+                  strong Contenido restringido
+                  p.text-muted= mainPost.mediaRestrictionMessage
               .hero__card-overlay
                 strong= mainPost.title
                 p= mainPost.user ? `Por ${mainPost.user.username}` : "Publicación destacada"
           .hero__column
             each post in featuredPosts.slice(1, 4)
               .hero__mini-card
-                if post.media && post.media.length && post.media[0].type === "image"
-                  img(src=post.media[0].url alt=post.title)
+                if post.canShowPrimaryMedia && post.primaryMedia && post.primaryMedia.type === "image"
+                  img(src=post.primaryMedia.url alt=post.title)
+                else if post.isMediaRestrictedForAnonymous
+                  .media-guard
+                    strong Contenido restringido
+                    p.text-muted= post.mediaRestrictionMessage
                 .hero__card-overlay
                   strong= post.title
       else

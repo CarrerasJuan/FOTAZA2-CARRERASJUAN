@@ -2,17 +2,21 @@ extends ../layouts/main
 
 block content
   if post
-    - const primaryMedia = post.media && post.media.length ? post.media[0] : null
+    - const primaryMedia = post.primaryMedia || (post.media && post.media.length ? post.media[0] : null)
     - const watermarkLabel = primaryMedia ? (primaryMedia.watermark_text || (primaryMedia.license === "copyright" ? "Copyright" : null)) : null
     section.page-section.detail-grid
       article.detail-card
         .detail-card__hero
           .detail-card__hero-media
-            if primaryMedia && primaryMedia.type === "image"
+            if post.canShowPrimaryMedia && primaryMedia && primaryMedia.type === "image"
               .detail-card__media-frame
                 img(src=primaryMedia.url alt=post.title)
                 if watermarkLabel
                   span.detail-card__watermark= watermarkLabel
+            else if post.isMediaRestrictedForAnonymous
+              .media-guard.media-guard--detail
+                strong Contenido restringido
+                p.text-muted= post.mediaRestrictionMessage
           .detail-card__content
             if formError
               .alert= formError

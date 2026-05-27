@@ -310,6 +310,28 @@ select {
   object-fit: cover;
 }
 
+.media-guard {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  background:
+    linear-gradient(135deg, rgba(25, 23, 20, 0.96), rgba(53, 43, 34, 0.9)),
+    #ebe4da;
+  color: var(--text);
+}
+
+.media-guard strong {
+  font-size: 1rem;
+}
+
+.media-guard .text-muted {
+  margin: 0;
+  max-width: none;
+}
+
 .feed-card__body,
 .collection-card__body,
 .search-card__body,
@@ -412,6 +434,11 @@ select {
 
 .detail-card__content {
   padding: 28px;
+}
+
+.media-guard--detail {
+  min-height: 320px;
+  align-items: flex-start;
 }
 
 .detail-card__title {
