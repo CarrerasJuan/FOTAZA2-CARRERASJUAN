@@ -1,103 +1,132 @@
 extends layouts/main
 
 block content
-  section.hero.page-section
+  section.hero.hero--public.page-section
     .hero__content
       span.hero__eyebrow Plataforma visual comunitaria
       h1.hero__title
-        | Descubrí, compartí y organizá
+        | Descubrí, compartí y
         br
-        span.hero__title-accent fotografías y videos
+        span.hero__title-accent organizá inspiración visual
       p.hero__description
-        | Fotaza reúne publicaciones visuales, perfiles, colecciones, intereses y navegación social
-        |  en una experiencia simple para explorar contenido y participar con tu propia cuenta.
+        | FOTAZA reúne publicaciones, perfiles, colecciones e intereses en una experiencia simple para
+        |  explorar contenido visual y participar en comunidad.
       .hero__actions
         a.button.button--dark(href="/posts") Ver publicaciones
         if sessionUser
           a.button.button--ghost(href=`/users/${sessionUser.id}`) Ir a mi perfil
         else
           a.button.button--ghost(href="/auth/register") Crear cuenta
-    .hero__visual
+      .hero__stats
+        .hero__stat
+          strong= featuredPosts && featuredPosts.length ? featuredPosts.length : 0
+          span Publicaciones destacadas
+        .hero__stat
+          strong= featuredTags && featuredTags.length ? featuredTags.length : 0
+          span Tags visibles
+        .hero__stat
+          strong Comunidad
+          span Perfiles, intereses y colecciones
+    .hero__visual.hero__visual--public
       if featuredPosts && featuredPosts.length
-        .hero__mosaic
+        - const mainPost = featuredPosts[0]
+        .hero__mosaic.hero__mosaic--public
           .hero__feature
-            - const mainPost = featuredPosts[0]
-            .hero__feature-card
+            .hero__feature-card.hero__feature-card--tall
               if mainPost.canShowPrimaryMedia && mainPost.primaryMedia && mainPost.primaryMedia.type === "image"
                 img(src=mainPost.primaryMedia.url alt=mainPost.title)
               else if mainPost.isMediaRestrictedForAnonymous
-                .media-guard
-                  strong Contenido restringido
+                .media-guard.media-guard--soft
+                  strong Contenido con acceso limitado
                   p.text-muted= mainPost.mediaRestrictionMessage
+              else
+                .hero__placeholder-card
+                  strong Fotaza
+                  p.text-muted Publicaciones visuales listas para explorar.
               .hero__card-overlay
+                span.hero__overlay-kicker Publicación destacada
                 strong= mainPost.title
-                p= mainPost.user ? `Por ${mainPost.user.username}` : "Publicación destacada"
-          .hero__column
-            each post in featuredPosts.slice(1, 4)
-              .hero__mini-card
-                if post.canShowPrimaryMedia && post.primaryMedia && post.primaryMedia.type === "image"
-                  img(src=post.primaryMedia.url alt=post.title)
-                else if post.isMediaRestrictedForAnonymous
-                  .media-guard
-                    strong Contenido restringido
-                    p.text-muted= post.mediaRestrictionMessage
-                .hero__card-overlay
-                  strong= post.title
+                p= mainPost.user ? `Por ${mainPost.user.username}` : "Contenido de la comunidad"
+          .hero__column.hero__column--public
+            .hero__mini-grid
+              each post, index in featuredPosts.slice(1, 5)
+                .hero__mini-card(class=index === 1 ? "hero__mini-card--portrait" : "")
+                  if post.canShowPrimaryMedia && post.primaryMedia && post.primaryMedia.type === "image"
+                    img(src=post.primaryMedia.url alt=post.title)
+                  else if post.isMediaRestrictedForAnonymous
+                    .media-guard.media-guard--soft
+                      strong Vista restringida
+                      p.text-muted= post.mediaRestrictionMessage
+                  else
+                    .hero__placeholder-card
+                      strong FOTAZA
+                  .hero__card-overlay
+                    strong= post.title
+            .hero__info-card
+              span.section-eyebrow Navegación social
+              h2 Inspiración, perfiles y colecciones en un mismo recorrido
+              p.text-muted Explorá publicaciones, seguí autores, organizá intereses y recorré el contenido sin una estructura rígida.
       else
-        .hero__feature-card
-          .hero__card-overlay
+        .hero__feature-card.hero__feature-card--empty
+          .hero__placeholder-card.hero__placeholder-card--empty
             strong Tu próximo contenido empieza acá
-            p Publicá imágenes, organizá colecciones y explorá perfiles dentro de Fotaza.
+            p.text-muted Publicá imágenes, organizá colecciones y explorá perfiles dentro de FOTAZA.
 
   section.page-section
-    .panel
-      span.section-eyebrow Navegación principal
-      h2 Accesos rápidos
-      p.section-description
-        | La aplicación ya integra autenticación, publicaciones, perfiles, intereses, colecciones y notificaciones.
-      .grid.grid--cards
-        a.feed-card(href="/posts")
+    .panel.panel--soft
+      .section-head
+        div
+          span.section-eyebrow Descubrir
+          h2 Descubrí lo que podés hacer en FOTAZA
+        p.section-description
+          | Una plataforma visual orientada a comunidad, exploración y organización simple del contenido.
+      .grid.grid--cards.grid--feature-links
+        a.feed-card.feed-card--feature(href="/posts")
           .feed-card__body
+            span.section-eyebrow Feed visual
             h3.feed-card__title Publicaciones
-            p.text-muted Explorá el feed, abrí detalles y navegá por tags relacionados.
+            p.text-muted Explorá imágenes, abrí detalles y navegá por tags relacionados.
+        a.feed-card.feed-card--feature(href="/collections")
+          .feed-card__body
+            span.section-eyebrow Organización
+            h3.feed-card__title Colecciones
+            p.text-muted Guardá publicaciones en recorridos personales para volver a ellas más tarde.
+        a.feed-card.feed-card--feature(href="/interests")
+          .feed-card__body
+            span.section-eyebrow Curación
+            h3.feed-card__title Intereses
+            p.text-muted Marcá contenido relevante para armar tu propio mapa de inspiración.
         if sessionUser
-          a.feed-card(href=`/users/${sessionUser.id}`)
+          a.feed-card.feed-card--feature(href=`/users/${sessionUser.id}`)
             .feed-card__body
+              span.section-eyebrow Perfil
               h3.feed-card__title Mi perfil
-              p.text-muted Revisá tu perfil, tus publicaciones y accesos personales.
-          a.feed-card(href="/collections")
-            .feed-card__body
-              h3.feed-card__title Colecciones
-              p.text-muted Agrupá publicaciones y consultá tus colecciones guardadas.
-          a.feed-card(href="/notifications")
-            .feed-card__body
-              h3.feed-card__title Notificaciones
-              p.text-muted Consultá interacciones recientes sobre tu cuenta y tus publicaciones.
+              p.text-muted Revisá tu actividad, tus publicaciones y tus accesos principales.
         else
-          a.feed-card(href="/auth/login")
+          a.feed-card.feed-card--feature(href="/auth/login")
             .feed-card__body
+              span.section-eyebrow Acceso
               h3.feed-card__title Iniciar sesión
-              p.text-muted Accedé para comentar, valorar, seguir usuarios y guardar intereses.
-          a.feed-card(href="/auth/register")
-            .feed-card__body
-              h3.feed-card__title Crear cuenta
-              p.text-muted Registrate para comenzar a publicar y participar en la plataforma.
+              p.text-muted Entrá para comentar, valorar, seguir usuarios y guardar intereses.
 
   if featuredTags && featuredTags.length
     section.page-section
-      .panel
-        span.section-eyebrow Categorías
-        h2 Intereses y tags
-        p.section-description
-          | Algunos tags disponibles dentro del contenido actual.
-        .chip-row
+      .panel.panel--tags
+        .section-head
+          div
+            span.section-eyebrow Tags activos
+            h2 Explorá temas y recorridos visuales
+          p.section-description Algunos tags disponibles dentro del contenido actual para empezar a navegar.
+        .chip-row.chip-row--hero
           each tag in featuredTags
             a.chip.chip--link(href=`/posts/tags/${tag.id}`)= tag.name
 
   section.page-section
-    .panel
-      span.section-eyebrow Estado del proyecto
-      h2 Base funcional integrada
-      p.section-description
-        | Fotaza ya cuenta con una base funcional completa sobre Express, PUG, PostgreSQL y Sequelize,
-        |  con autenticación, publicaciones, perfiles, colecciones e interacciones sociales básicas.
+    .panel.panel--footer-note
+      .section-head
+        div
+          span.section-eyebrow Comunidad visual
+          h2 Una base lista para explorar, publicar y ordenar contenido
+        p.section-description
+          | FOTAZA ya integra publicaciones, perfiles, seguidores, intereses, colecciones y navegación social
+          |  dentro de una experiencia visual simple y enfocada en comunidad.

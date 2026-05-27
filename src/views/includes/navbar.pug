@@ -3,32 +3,39 @@ mixin navLink(href, label)
 
 header.navbar
   .navbar__inner
-    a.navbar__brand(href="/")
-      span.navbar__brand-mark F
-      span.navbar__brand-text Fotaza
+    .navbar__brand-group
+      a.navbar__brand(href="/")
+        span.navbar__brand-mark F
+        span.navbar__brand-text Fotaza
+
+    nav.navbar__links.navbar__links--desktop
+      +navLink("/", "Descubrir")
+      +navLink("/posts", "Publicaciones")
+      +navLink("/collections", "Colecciones")
+      +navLink("/interests", "Intereses")
 
     form.navbar__search(action="/search" method="GET")
+      span.navbar__search-icon(aria-hidden="true") ⌕
       label.sr-only(for="navbar-search") Buscar
       input#navbar-search.navbar__search-input(
         type="text"
         name="q"
-        placeholder="Buscar publicaciones o usuarios"
+        placeholder="Buscar publicaciones, usuarios o tags"
         value=typeof query !== "undefined" ? query : ""
       )
       button.button.button--ghost.navbar__search-button(type="submit") Buscar
 
-    nav.navbar__menu
-      +navLink("/posts", "Publicaciones")
+    .navbar__actions
       if sessionUser
-        +navLink(`/users/${sessionUser.id}`, "Mi perfil")
-        +navLink("/collections", "Colecciones")
-        +navLink("/interests", "Intereses")
-        +navLink("/posts/following", "Seguidos")
-        +navLink("/notifications", "Notificaciones")
-        if sessionUser.role === "validator"
-          +navLink("/validator", "Validador")
+        nav.navbar__links.navbar__links--session
+          +navLink(`/users/${sessionUser.id}`, "Mi perfil")
+          +navLink("/posts/following", "Seguidos")
+          +navLink("/notifications", "Notificaciones")
+          if sessionUser.role === "validator"
+            +navLink("/validator", "Validador")
         form.navbar__logout(action="/auth/logout" method="POST")
           button.button.button--dark.button--small(type="submit") Cerrar sesión
       else
-        +navLink("/auth/login", "Iniciar sesión")
-        a.button.button--dark.button--small(href="/auth/register") Crear cuenta
+        .navbar__cta
+          a.button.button--ghost.button--small(href="/auth/register") Registrarse
+          a.button.button--dark.button--small(href="/auth/login") Iniciar sesión
