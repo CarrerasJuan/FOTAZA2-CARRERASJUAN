@@ -1,14 +1,16 @@
 # FOTAZA2
 
-Aplicacion web comunitaria para compartir fotografias, desarrollada con Node.js, Express, Pug, PostgreSQL y Sequelize bajo una arquitectura MVC.
+FOTAZA2 es una aplicación web comunitaria para publicar imágenes, navegar perfiles, guardar intereses, organizar colecciones e interactuar con otras publicaciones mediante comentarios, valoraciones, denuncias y seguimiento.
 
-## Tecnologias utilizadas
+El proyecto está desarrollado con Express, Sequelize, PostgreSQL y PUG siguiendo una estructura MVC.
+
+## Stack
 
 - Node.js
 - Express
-- Pug
 - PostgreSQL
 - Sequelize
+- PUG
 - bcrypt
 - express-session
 - dotenv
@@ -18,27 +20,22 @@ Aplicacion web comunitaria para compartir fotografias, desarrollada con Node.js,
 - Node.js 18 o superior
 - npm
 - PostgreSQL 14 o superior
-- Una base de datos PostgreSQL vacia creada previamente
+- una base de datos PostgreSQL creada previamente
 
-## Instalacion y puesta en marcha
-
-Seguir exactamente este orden:
+## Instalación local
 
 1. Clonar el repositorio.
 2. Ejecutar `npm install`.
-3. Crear una base PostgreSQL vacia.
-4. Copiar `.env.example` a `.env`.
-5. Configurar en `.env` las variables `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` y `DB_PASSWORD`.
-6. Ejecutar `npm run db:init`.
-7. Ejecutar `npm start`.
+3. Copiar `.env.example` a `.env`.
+4. Completar las variables de entorno.
+5. Ejecutar `npm run db:init` para crear schema y cargar datos semilla.
+6. Ejecutar `npm start`.
 
-Una vez iniciado el servidor, la aplicacion queda disponible en:
+Servidor local por defecto:
 
 - `http://localhost:3000`
 
 ## Variables de entorno
-
-Ejemplo de configuracion:
 
 ```env
 PORT=3000
@@ -50,50 +47,87 @@ DB_PASSWORD=your_password_here
 SESSION_SECRET=your_session_secret_here
 ```
 
-## Inicializacion de base de datos
+## Base de datos
 
-El comando `npm run db:init` realiza una inicializacion completa para evaluacion:
+El proyecto usa PostgreSQL con Sequelize, pero la estructura principal se inicializa desde SQL.
 
-1. Se conecta a PostgreSQL usando las variables del archivo `.env`.
-2. Elimina y recrea el esquema `public`.
-3. Ejecuta `database/fotaza_schema.sql`.
-4. Ejecuta `database/fotaza_seed.sql`.
-5. Deja la aplicacion lista para navegar con datos de prueba.
+`npm run db:init`:
+
+1. valida variables de entorno;
+2. elimina y recrea el esquema `public`;
+3. ejecuta `database/fotaza_schema.sql`;
+4. ejecuta `database/fotaza_seed.sql`.
 
 Importante:
 
-- No se utiliza `sequelize.sync()`.
-- La estructura sale del SQL oficial del proyecto.
-- Los datos semilla incluyen usuarios, publicaciones, media, tags, comentarios, follows, intereses, colecciones y notificaciones basicas.
+- `npm run db:init` reinicia la base completa.
+- no se usa `sequelize.sync()`;
+- no hay migraciones automáticas en este proyecto.
+
+Para verificar modelos y asociaciones:
+
+- `npm run db:models`
+
+## Scripts disponibles
+
+- `npm start`: inicia el servidor Express.
+- `npm run db:init`: reinicializa base y carga datos semilla.
+- `npm run db:models`: valida modelos Sequelize y asociaciones.
+- `npm run db:sample-post`: crea una publicación de ejemplo.
 
 ## Usuarios de prueba
 
-Las contrasenas de prueba estan hasheadas con bcrypt y funcionan con el login real de la aplicacion.
-
-| Rol | Usuario | Correo | Contrasena |
+| Rol | Usuario | Correo | Contraseña |
 | --- | --- | --- | --- |
 | regular | `ana_fotaza` | `ana.fotaza@example.com` | `fotaza123` |
 | validator | `validador_fotaza` | `validador.fotaza@example.com` | `validator123` |
 | regular | `bruno_comunidad` | `bruno.comunidad@example.com` | `comunidad123` |
 
-## Roles disponibles
+## Funcionalidades principales
 
-- `regular`
-- `validator`
+- registro, login y logout
+- perfil de usuario y edición de perfil
+- publicaciones con imagen, licencia y marca de agua mínima
+- edición y eliminación de publicaciones
+- comentarios
+- valoraciones
+- denuncias
+- tags
+- seguimiento entre usuarios
+- intereses
+- colecciones
+- notificaciones
+- moderación básica para usuario `validator`
+- visibilidad restringida de media para usuarios anónimos según licencia
 
-## Scripts disponibles
+## Rutas principales
 
-- `npm start`
-  - Inicia el servidor Express en el puerto configurado.
+Vistas públicas:
 
-- `npm run db:init`
-  - Inicializa la base de datos desde el schema SQL oficial y carga datos semilla.
+- `/`
+- `/health`
+- `/auth/login`
+- `/auth/register`
+- `/posts`
+- `/posts/:id`
+- `/search`
 
-- `npm run db:models`
-  - Verifica la carga de modelos Sequelize y sus asociaciones.
+Vistas con sesión:
 
-- `npm run db:sample-post`
-  - Crea una publicacion de ejemplo utilizando el flujo del proyecto.
+- `/posts/create`
+- `/posts/:id/edit`
+- `/users/:id`
+- `/users/:id/edit`
+- `/collections`
+- `/collections/create`
+- `/collections/:id`
+- `/interests`
+- `/notifications`
+- `/posts/following`
+
+Moderación:
+
+- `/validator`
 
 ## Estructura principal
 
@@ -107,6 +141,7 @@ src/
   models/
   routes/
   scripts/
+  utils/
   views/
 
 database/
@@ -115,40 +150,10 @@ database/
 
 public/
   css/
-  js/
-  img/
 ```
 
-## Modulos implementados
+## Observaciones
 
-- Autenticacion de usuarios
-- Publicaciones
-- Comentarios
-- Valoraciones basicas
-- Denuncias basicas
-- Perfiles de usuario
-- Seguimiento entre usuarios
-- Intereses
-- Busqueda
-- Colecciones
-- Tags
-- Notificaciones
-
-## Informe breve de problemas solucionados
-
-Durante la estabilizacion tecnica de entrega se resolvieron los siguientes puntos:
-
-1. Inicializacion real de base de datos desde SQL
-   - El script `src/scripts/dbInit.js` paso de validar solamente la conexion a ejecutar el schema oficial y una carga controlada de datos de prueba.
-
-2. Carga de datos de prueba
-   - Se agrego `database/fotaza_seed.sql` con usuarios de prueba, publicaciones, media, tags e interacciones minimas para que la aplicacion no quede vacia despues de la instalacion.
-
-3. Correccion de edicion de perfil
-   - Se corrigio `src/controllers/userController.js` para que el formulario de edicion de perfil cargue correctamente los datos reales del usuario autenticado.
-
-## Observaciones de uso
-
-- La base de datos se reinicializa por completo cada vez que se ejecuta `npm run db:init`.
-- El proyecto utiliza renderizado del lado del servidor con Pug.
-- La configuracion se resuelve por variables de entorno.
+- El renderizado es del lado del servidor con PUG.
+- La media usa una sola imagen principal por publicación.
+- Las licencias y la visibilidad anónima se resuelven con los campos existentes de `media`.

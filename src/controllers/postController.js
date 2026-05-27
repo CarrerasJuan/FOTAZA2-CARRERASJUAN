@@ -1,5 +1,23 @@
 const { Op } = require("sequelize");
-const { Post, User, Media, Comment, Rating, Report, Collection, Interest, Tag, PostTag, Follow } = require("../models");
+const {
+    Post,
+    User,
+    Media,
+    Comment,
+    Rating,
+    Report,
+    Collection,
+    Interest,
+    Tag,
+    PostTag,
+    Follow,
+    CollectionItem,
+    Notification,
+    NotificationComment,
+    NotificationRating,
+    NotificationReport,
+    NotificationInterest
+} = require("../models");
 const { applyMediaVisibilityToPost, applyMediaVisibilityToPosts } = require("../utils/mediaVisibility");
 
 const parsePostId = (value) => {
@@ -98,6 +116,210 @@ const getActiveReportCount = async (postId) => {
             status: {
                 [Op.in]: ACTIVE_REPORT_STATUSES
             }
+        }
+    });
+};
+
+const deletePostDependencies = async (postId) => {
+    const comments = await Comment.findAll({
+        where: {
+            post_id: postId
+        },
+        attributes: ["id"]
+    });
+    const commentIds = comments.map((comment) => comment.id);
+
+    if (commentIds.length) {
+        const notificationCommentRows = await NotificationComment.findAll({
+            where: {
+                comment_id: {
+                    [Op.in]: commentIds
+                }
+            },
+            attributes: ["notification_id"]
+        });
+        const notificationIds = notificationCommentRows.map((row) => row.notification_id);
+
+        await NotificationComment.destroy({
+            where: {
+                comment_id: {
+                    [Op.in]: commentIds
+                }
+            }
+        });
+
+        if (notificationIds.length) {
+            await Notification.destroy({
+                where: {
+                    id: {
+                        [Op.in]: notificationIds
+                    }
+                }
+            });
+        }
+
+        await Comment.destroy({
+            where: {
+                id: {
+                    [Op.in]: commentIds
+                }
+            }
+        });
+    }
+
+    const ratings = await Rating.findAll({
+        where: {
+            post_id: postId
+        },
+        attributes: ["id"]
+    });
+    const ratingIds = ratings.map((rating) => rating.id);
+
+    if (ratingIds.length) {
+        const notificationRatingRows = await NotificationRating.findAll({
+            where: {
+                rating_id: {
+                    [Op.in]: ratingIds
+                }
+            },
+            attributes: ["notification_id"]
+        });
+        const notificationIds = notificationRatingRows.map((row) => row.notification_id);
+
+        await NotificationRating.destroy({
+            where: {
+                rating_id: {
+                    [Op.in]: ratingIds
+                }
+            }
+        });
+
+        if (notificationIds.length) {
+            await Notification.destroy({
+                where: {
+                    id: {
+                        [Op.in]: notificationIds
+                    }
+                }
+            });
+        }
+
+        await Rating.destroy({
+            where: {
+                id: {
+                    [Op.in]: ratingIds
+                }
+            }
+        });
+    }
+
+    const reports = await Report.findAll({
+        where: {
+            post_id: postId
+        },
+        attributes: ["id"]
+    });
+    const reportIds = reports.map((report) => report.id);
+
+    if (reportIds.length) {
+        const notificationReportRows = await NotificationReport.findAll({
+            where: {
+                report_id: {
+                    [Op.in]: reportIds
+                }
+            },
+            attributes: ["notification_id"]
+        });
+        const notificationIds = notificationReportRows.map((row) => row.notification_id);
+
+        await NotificationReport.destroy({
+            where: {
+                report_id: {
+                    [Op.in]: reportIds
+                }
+            }
+        });
+
+        if (notificationIds.length) {
+            await Notification.destroy({
+                where: {
+                    id: {
+                        [Op.in]: notificationIds
+                    }
+                }
+            });
+        }
+
+        await Report.destroy({
+            where: {
+                id: {
+                    [Op.in]: reportIds
+                }
+            }
+        });
+    }
+
+    const interests = await Interest.findAll({
+        where: {
+            post_id: postId
+        },
+        attributes: ["id"]
+    });
+    const interestIds = interests.map((interest) => interest.id);
+
+    if (interestIds.length) {
+        const notificationInterestRows = await NotificationInterest.findAll({
+            where: {
+                interest_id: {
+                    [Op.in]: interestIds
+                }
+            },
+            attributes: ["notification_id"]
+        });
+        const notificationIds = notificationInterestRows.map((row) => row.notification_id);
+
+        await NotificationInterest.destroy({
+            where: {
+                interest_id: {
+                    [Op.in]: interestIds
+                }
+            }
+        });
+
+        if (notificationIds.length) {
+            await Notification.destroy({
+                where: {
+                    id: {
+                        [Op.in]: notificationIds
+                    }
+                }
+            });
+        }
+
+        await Interest.destroy({
+            where: {
+                id: {
+                    [Op.in]: interestIds
+                }
+            }
+        });
+    }
+
+    await CollectionItem.destroy({
+        where: {
+            post_id: postId
+        }
+    });
+
+    await PostTag.destroy({
+        where: {
+            post_id: postId
+        }
+    });
+
+    await Media.destroy({
+        where: {
+            post_id: postId
         }
     });
 };
@@ -747,6 +969,7 @@ const remove = async (req, res, next) => {
             });
         }
 
+        await deletePostDependencies(post.id);
         await post.destroy();
 
         return res.redirect("/posts");

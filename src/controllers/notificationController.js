@@ -3,12 +3,13 @@ const {
     NotificationComment,
     NotificationRating,
     NotificationFollow,
+    NotificationInterest,
     NotificationReport,
     Comment,
     Rating,
     Report,
     User,
-    Post
+    Interest
 } = require("../models");
 
 const parseNotificationId = (value) => {
@@ -58,6 +59,17 @@ const index = async (req, res, next) => {
                             model: User,
                             as: "follower",
                             attributes: ["id", "username"]
+                        }
+                    ]
+                },
+                {
+                    model: NotificationInterest,
+                    as: "notificationInterest",
+                    include: [
+                        {
+                            model: Interest,
+                            as: "interest",
+                            attributes: ["id", "post_id"]
                         }
                     ]
                 },

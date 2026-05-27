@@ -1,6 +1,7 @@
 extends ../layouts/main
 
 block content
+  - const notificationLabels = { comment: "Comentario", rating: "Valoración", follow: "Nuevo seguidor", report: "Denuncia", interest: "Interés" }
   section.page-section
     .panel
       span.section-eyebrow Actividad reciente
@@ -13,10 +14,10 @@ block content
         each notification in notifications
           article.notice-item
             .notice-card__body
-              h2.feed-card__title= notification.type
+              h2.feed-card__title= notificationLabels[notification.type] || notification.type
               .feed-meta
                 span= notification.is_read ? "Leída" : "No leída"
-                span= `${notification.created_at}`
+                span= new Date(notification.created_at).toLocaleString("es-AR")
                 if notification.actor
                   span= `Usuario: ${notification.actor.username}`
 
@@ -40,6 +41,9 @@ block content
                 if notification.notificationReport.report.post_id
                   .inline-actions
                     a.button.button--ghost.button--small(href=`/posts/${notification.notificationReport.report.post_id}`) Ver publicación
+
+              if notification.type === "interest" && notification.notificationInterest && notification.notificationInterest.interest
+                p.text-muted Publicación guardada en intereses por otro usuario.
 
               unless notification.is_read
                 form(action=`/notifications/${notification.id}/read` method="POST")
