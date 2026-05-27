@@ -27,14 +27,20 @@ header.navbar
 
     .navbar__actions
       if sessionUser
-        nav.navbar__links.navbar__links--session
-          +navLink(`/users/${sessionUser.id}`, "Mi perfil")
-          +navLink("/posts/following", "Seguidos")
-          +navLink("/notifications", "Notificaciones")
-          if sessionUser.role === "validator"
-            +navLink("/validator", "Validador")
-        form.navbar__logout(action="/auth/logout" method="POST")
-          button.button.button--dark.button--small(type="submit") Cerrar sesión
+        details.navbar__account
+          summary.navbar__account-toggle
+            span.navbar__account-avatar= sessionUser.username ? sessionUser.username.charAt(0).toUpperCase() : "U"
+          .navbar__account-menu
+            if sessionUser.email
+              p.navbar__account-email= sessionUser.email
+            a.navbar__account-link(href=`/users/${sessionUser.id}`) Mi perfil
+            a.navbar__account-link(href="/interests") Mis intereses
+            a.navbar__account-link(href="/posts/following") Seguidos
+            a.navbar__account-link(href="/notifications") Notificaciones
+            if sessionUser.role === "validator"
+              a.navbar__account-link(href="/validator") Validador
+            form.navbar__account-logout(action="/auth/logout" method="POST")
+              button.navbar__account-link.navbar__account-link--button(type="submit") Cerrar sesión
       else
         .navbar__cta
           a.button.button--ghost.button--small(href="/auth/register") Registrarse

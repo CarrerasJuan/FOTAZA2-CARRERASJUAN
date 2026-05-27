@@ -195,8 +195,92 @@ select {
   flex-wrap: nowrap;
 }
 
-.navbar__logout {
-  margin: 0;
+.navbar__account {
+  position: relative;
+}
+
+.navbar__account[open] .navbar__account-toggle {
+  background: #d9d9d9;
+}
+
+.navbar__account-toggle {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #efefef;
+  cursor: pointer;
+}
+
+.navbar__account-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.navbar__account-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  color: var(--brand);
+  font-size: 0.92rem;
+  font-weight: 700;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.navbar__account-menu {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  width: min(320px, calc(100vw - 32px));
+  padding: 20px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 22px 42px rgba(18, 16, 13, 0.14);
+  display: grid;
+  gap: 6px;
+  z-index: 40;
+}
+
+.navbar__account-email {
+  margin: 0 0 8px;
+  color: var(--text);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.navbar__account-link {
+  display: flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 0 10px;
+  border-radius: 14px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.navbar__account-link:hover {
+  background: var(--surface-alt);
+}
+
+.navbar__account-logout {
+  margin: 4px 0 0;
+}
+
+.navbar__account-link--button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
 }
 
 .app-shell {
@@ -974,6 +1058,10 @@ select {
     flex-wrap: wrap;
   }
 
+  .navbar__actions {
+    justify-content: flex-end;
+  }
+
   .grid--feature-links,
   .hero__stats,
   .hero__mini-grid {
@@ -1022,6 +1110,11 @@ select {
 
   .navbar__links {
     flex-wrap: wrap;
+  }
+
+  .navbar__account-menu {
+    right: auto;
+    left: 0;
   }
 
   .navbar__cta .button {
