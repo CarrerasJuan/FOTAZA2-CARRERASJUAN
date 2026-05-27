@@ -74,6 +74,21 @@ const syncPostTags = async (postId, rawTags) => {
 const hasInvalidTagLength = (rawTags) => normalizeTagNames(rawTags).some((tag) => tag.length > 50);
 
 const ACTIVE_REPORT_STATUSES = ["pending", "active"];
+const DEFAULT_MEDIA_LICENSE = "standard";
+const MAX_MEDIA_LICENSE_LENGTH = 30;
+const MAX_WATERMARK_LENGTH = 100;
+const PRESET_MEDIA_LICENSES = new Set(["standard", "copyright", "cc-by", "cc-by-nc", "public-domain"]);
+
+const normalizeMediaLicense = (licenseOption, customLicense) => {
+    const trimmedCustomLicense = customLicense ? customLicense.trim() : "";
+    const trimmedLicenseOption = licenseOption ? licenseOption.trim() : "";
+
+    if (trimmedCustomLicense) {
+        return trimmedCustomLicense;
+    }
+
+    return trimmedLicenseOption || DEFAULT_MEDIA_LICENSE;
+};
 
 const getActiveReportCount = async (postId) => {
     return Report.count({
@@ -86,13 +101,22 @@ const getActiveReportCount = async (postId) => {
     });
 };
 
-const buildEditValues = (post, overrides = {}) => ({
-    title: overrides.title ?? post.title,
-    description: overrides.description ?? (post.description || ""),
-    comments_enabled: overrides.comments_enabled ?? post.comments_enabled,
-    media_url: overrides.media_url ?? (post.media && post.media.length ? post.media[0].url : ""),
-    tags: overrides.tags ?? (post.tags && post.tags.length ? post.tags.map((tag) => tag.name).join(", ") : "")
-});
+const buildEditValues = (post, overrides = {}) => {
+    const currentMedia = post.media && post.media.length ? post.media[0] : null;
+    const currentLicense = currentMedia ? currentMedia.license : "";
+    const usesPresetLicense = PRESET_MEDIA_LICENSES.has(currentLicense);
+
+    return {
+        title: overrides.title ?? post.title,
+        description: overrides.description ?? (post.description || ""),
+        comments_enabled: overrides.comments_enabled ?? post.comments_enabled,
+        media_url: overrides.media_url ?? (currentMedia ? currentMedia.url : ""),
+        license_option: overrides.license_option ?? (usesPresetLicense ? currentLicense : DEFAULT_MEDIA_LICENSE),
+        license_custom: overrides.license_custom ?? (currentMedia && !usesPresetLicense ? currentLicense : ""),
+        watermark_text: overrides.watermark_text ?? (currentMedia ? (currentMedia.watermark_text || "") : ""),
+        tags: overrides.tags ?? (post.tags && post.tags.length ? post.tags.map((tag) => tag.name).join(", ") : "")
+    };
+};
 
 const postFeedInclude = [
     {
@@ -281,6 +305,9 @@ const showCreateForm = (req, res) => {
             description: "",
             comments_enabled: true,
             media_url: "",
+            license_option: DEFAULT_MEDIA_LICENSE,
+            license_custom: "",
+            watermark_text: "",
             tags: ""
         }
     });
@@ -328,6 +355,10 @@ const create = async (req, res, next) => {
     const title = req.body.title ? req.body.title.trim() : "";
     const description = req.body.description ? req.body.description.trim() : "";
     const media_url = req.body.media_url ? req.body.media_url.trim() : "";
+    const license_option = req.body.license_option ? req.body.license_option.trim() : DEFAULT_MEDIA_LICENSE;
+    const license_custom = req.body.license_custom ? req.body.license_custom.trim() : "";
+    const license = normalizeMediaLicense(license_option, license_custom);
+    const watermark_text = req.body.watermark_text ? req.body.watermark_text.trim() : "";
     const tags = req.body.tags ? req.body.tags.trim() : "";
     const comments_enabled = req.body.comments_enabled;
 
@@ -341,6 +372,9 @@ const create = async (req, res, next) => {
                     description,
                     comments_enabled: comments_enabled === "on",
                     media_url,
+                    license_option,
+                    license_custom,
+                    watermark_text,
                     tags
                 }
             });
@@ -355,6 +389,43 @@ const create = async (req, res, next) => {
                     description,
                     comments_enabled: comments_enabled === "on",
                     media_url,
+                    license_option,
+                    license_custom,
+                    watermark_text,
+                    tags
+                }
+            });
+        }
+
+        if (media_url && license.length > MAX_MEDIA_LICENSE_LENGTH) {
+            return res.status(400).render("posts/create", {
+                title: "Crear publicación",
+                error: "La licencia no puede superar los 30 caracteres.",
+                values: {
+                    title,
+                    description,
+                    comments_enabled: comments_enabled === "on",
+                    media_url,
+                    license_option,
+                    license_custom,
+                    watermark_text,
+                    tags
+                }
+            });
+        }
+
+        if (media_url && watermark_text.length > MAX_WATERMARK_LENGTH) {
+            return res.status(400).render("posts/create", {
+                title: "Crear publicación",
+                error: "La marca de agua no puede superar los 100 caracteres.",
+                values: {
+                    title,
+                    description,
+                    comments_enabled: comments_enabled === "on",
+                    media_url,
+                    license_option,
+                    license_custom,
+                    watermark_text,
                     tags
                 }
             });
@@ -377,9 +448,8 @@ const create = async (req, res, next) => {
                 post_id: post.id,
                 type: "image",
                 url: media_url.trim(),
-                license: "standard",
-                watermark_text: null
-                ,
+                license,
+                watermark_text: watermark_text || null,
                 created_at: now
             });
         }
@@ -396,6 +466,9 @@ const create = async (req, res, next) => {
                 description,
                 comments_enabled: comments_enabled === "on",
                 media_url,
+                license_option,
+                license_custom,
+                watermark_text,
                 tags
             }
         });
@@ -464,6 +537,10 @@ const update = async (req, res, next) => {
     const title = req.body.title ? req.body.title.trim() : "";
     const description = req.body.description ? req.body.description.trim() : "";
     const media_url = req.body.media_url ? req.body.media_url.trim() : "";
+    const license_option = req.body.license_option ? req.body.license_option.trim() : DEFAULT_MEDIA_LICENSE;
+    const license_custom = req.body.license_custom ? req.body.license_custom.trim() : "";
+    const license = normalizeMediaLicense(license_option, license_custom);
+    const watermark_text = req.body.watermark_text ? req.body.watermark_text.trim() : "";
     const tags = req.body.tags ? req.body.tags.trim() : "";
     const comments_enabled = req.body.comments_enabled;
 
@@ -523,6 +600,9 @@ const update = async (req, res, next) => {
                     description,
                     comments_enabled: comments_enabled === "on",
                     media_url,
+                    license_option,
+                    license_custom,
+                    watermark_text,
                     tags
                 })
             });
@@ -538,6 +618,45 @@ const update = async (req, res, next) => {
                     description,
                     comments_enabled: comments_enabled === "on",
                     media_url,
+                    license_option,
+                    license_custom,
+                    watermark_text,
+                    tags
+                })
+            });
+        }
+
+        if (media_url && license.length > MAX_MEDIA_LICENSE_LENGTH) {
+            return res.status(400).render("posts/edit", {
+                title: "Editar publicación",
+                error: "La licencia no puede superar los 30 caracteres.",
+                post,
+                values: buildEditValues(post, {
+                    title,
+                    description,
+                    comments_enabled: comments_enabled === "on",
+                    media_url,
+                    license_option,
+                    license_custom,
+                    watermark_text,
+                    tags
+                })
+            });
+        }
+
+        if (media_url && watermark_text.length > MAX_WATERMARK_LENGTH) {
+            return res.status(400).render("posts/edit", {
+                title: "Editar publicación",
+                error: "La marca de agua no puede superar los 100 caracteres.",
+                post,
+                values: buildEditValues(post, {
+                    title,
+                    description,
+                    comments_enabled: comments_enabled === "on",
+                    media_url,
+                    license_option,
+                    license_custom,
+                    watermark_text,
                     tags
                 })
             });
@@ -555,7 +674,9 @@ const update = async (req, res, next) => {
         if (trimmedMediaUrl) {
             if (currentMedia) {
                 await currentMedia.update({
-                    url: trimmedMediaUrl
+                    url: trimmedMediaUrl,
+                    license,
+                    watermark_text: watermark_text || null
                 });
             } else {
                 const now = new Date();
@@ -563,8 +684,8 @@ const update = async (req, res, next) => {
                     post_id: post.id,
                     type: "image",
                     url: trimmedMediaUrl,
-                    license: "standard",
-                    watermark_text: null,
+                    license,
+                    watermark_text: watermark_text || null,
                     created_at: now
                 });
             }
@@ -587,6 +708,9 @@ const update = async (req, res, next) => {
                 description,
                 comments_enabled: comments_enabled === "on",
                 media_url,
+                license_option,
+                license_custom,
+                watermark_text,
                 tags
             }
         });

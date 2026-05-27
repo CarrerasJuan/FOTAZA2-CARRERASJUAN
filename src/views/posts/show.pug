@@ -2,12 +2,17 @@ extends ../layouts/main
 
 block content
   if post
+    - const primaryMedia = post.media && post.media.length ? post.media[0] : null
+    - const watermarkLabel = primaryMedia ? (primaryMedia.watermark_text || (primaryMedia.license === "copyright" ? "Copyright" : null)) : null
     section.page-section.detail-grid
       article.detail-card
         .detail-card__hero
           .detail-card__hero-media
-            if post.media && post.media.length && post.media[0].type === "image"
-              img(src=post.media[0].url alt=post.title)
+            if primaryMedia && primaryMedia.type === "image"
+              .detail-card__media-frame
+                img(src=primaryMedia.url alt=post.title)
+                if watermarkLabel
+                  span.detail-card__watermark= watermarkLabel
           .detail-card__content
             if formError
               .alert= formError
@@ -16,6 +21,11 @@ block content
               span= post.user ? `Por ${post.user.username}` : "Sin usuario"
               span= `Estado: ${post.status}`
               span= post.comments_enabled ? "Comentarios habilitados" : "Comentarios cerrados"
+            if primaryMedia && primaryMedia.license
+              .badge-row
+                span.badge Licencia: #{primaryMedia.license}
+                if primaryMedia.watermark_text
+                  span.badge Marca de agua: #{primaryMedia.watermark_text}
             if post.description
               p.section-description= post.description
             .badge-row

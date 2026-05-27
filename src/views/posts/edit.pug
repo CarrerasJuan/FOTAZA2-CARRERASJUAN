@@ -24,6 +24,23 @@ block content
           input#media_url.form-input(type="url" name="media_url" value=values.media_url)
 
         .form-field
+          label(for="license_option") Licencia
+          select#license_option.form-select(name="license_option")
+            option(value="standard" selected=values.license_option === "standard") Standard
+            option(value="copyright" selected=values.license_option === "copyright") Copyright
+            option(value="cc-by" selected=values.license_option === "cc-by") CC BY
+            option(value="cc-by-nc" selected=values.license_option === "cc-by-nc") CC BY-NC
+            option(value="public-domain" selected=values.license_option === "public-domain") Dominio público
+
+        .form-field
+          label(for="license_custom") Licencia personalizada
+          input#license_custom.form-input(type="text" name="license_custom" maxlength="30" value=values.license_custom placeholder="Opcional, reemplaza la licencia elegida")
+
+        .form-field
+          label(for="watermark_text") Marca de agua mínima
+          input#watermark_text.form-input(type="text" name="watermark_text" maxlength="100" value=values.watermark_text placeholder="Opcional, visible sobre la imagen")
+
+        .form-field
           label(for="tags") Tags
           input#tags.form-input(type="text" name="tags" value=values.tags placeholder="paisaje, noche, urbano")
 
