@@ -43,7 +43,18 @@ block content
                     a.button.button--ghost.button--small(href=`/posts/${notification.notificationReport.report.post_id}`) Ver publicación
 
               if notification.type === "interest" && notification.notificationInterest && notification.notificationInterest.interest
-                p.text-muted Publicación guardada en intereses por otro usuario.
+                p.text-muted
+                  if notification.actor
+                    | #{notification.actor.username} está interesado en tu publicación.
+                  else
+                    | Un usuario está interesado en tu publicación.
+                if notification.notificationInterest.interest.post
+                  p.text-muted= `Publicación: ${notification.notificationInterest.interest.post.title}`
+                .inline-actions
+                  if notification.actor
+                    a.button.button--ghost.button--small(href=`/users/${notification.actor.id}`) Ver perfil
+                  if notification.notificationInterest.interest.post_id
+                    a.button.button--ghost.button--small(href=`/posts/${notification.notificationInterest.interest.post_id}`) Ver publicación
 
               unless notification.is_read
                 form(action=`/notifications/${notification.id}/read` method="POST")

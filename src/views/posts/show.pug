@@ -65,13 +65,15 @@ block content
           h2 Interacciones
           if sessionUser
             .stack-actions
-              if currentUserInterest
+              if currentUserOwnsPost
+                p.text-muted No puedes marcar interés en tu propia publicación.
+              else if currentUserInterest
                 form(action=`/interests/${post.id}/delete` method="POST")
-                  button.button.button--soft(type="submit") Quitar de intereses
+                  button.button.button--soft(type="submit") Quitar me interesa
               else
                 form(action="/interests" method="POST")
                   input(type="hidden" name="post_id" value=post.id)
-                  button.button.button--soft(type="submit") Guardar en intereses
+                  button.button.button--soft(type="submit") Me interesa
 
               if userCollections && userCollections.length
                 form.form-grid(action=`/collections/${userCollections[0].id}/items` method="POST")

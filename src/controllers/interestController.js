@@ -61,6 +61,10 @@ const create = async (req, res, next) => {
             });
         }
 
+        if (post.user_id === req.session.user.id) {
+            return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("No puedes marcar interés en tu propia publicación.")}`);
+        }
+
         const now = new Date();
         const [interest, created] = await Interest.findOrCreate({
             where: {
