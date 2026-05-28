@@ -2,56 +2,111 @@ extends ../layouts/main
 
 block content
   if post
+    - const technicalTags = new Set(["seedpublic", "seedrestricted", "seeddelete", "fase5c", "edit", "delete", "restricted"])
+    - const normalizeTagLabel = (name) => {
+    -   if (!name) return null;
+    -   const lower = String(name).trim().toLowerCase();
+    -   if (technicalTags.has(lower)) return null;
+    -   if (lower === "public") return "Público";
+    -   return name;
+    - }
+    - const getVisibleTags = (tags) => (tags || []).map((tag) => ({ id: tag.id, label: normalizeTagLabel(tag.name) })).filter((tag) => tag.label)
+    - const normalizeSeedTitle = (sourcePost) => {
+    -   const rawTitle = sourcePost && sourcePost.title ? String(sourcePost.title).trim() : "";
+    -   const lower = rawTitle.toLowerCase();
+    -   const isRestricted = lower.includes("restricted") || sourcePost.isMediaRestrictedForAnonymous;
+    -   if (!rawTitle) return "Contenido visual";
+    -   if (lower.includes("public seed")) return "Publicación pública";
+    -   if (lower.includes("restricted seed")) return "Publicación restringida";
+    -   if (lower.includes("disposable seed")) return "Imagen de prueba";
+    -   if (lower.includes("seed") || /\b\d{6,}\b/.test(rawTitle)) {
+    -     return isRestricted ? "Contenido visual restringido" : "Contenido visual";
+    -   }
+    -   return rawTitle;
+    - }
+    - const normalizeSeedDescription = (description) => {
+    -   if (!description) return null;
+    -   const text = String(description).trim();
+    -   const lower = text.toLowerCase();
+    -   if (!text) return null;
+    -   if (lower.includes("seed") || lower.includes("fase5c") || lower.includes("disposable")) {
+    -     return "Publicación visual disponible para explorar, valorar y compartir dentro de la comunidad.";
+    -   }
+    -   return text;
+    - }
+    - const normalizeLicense = (license) => {
+    -   if (!license) return null;
+    -   const lower = String(license).trim().toLowerCase();
+    -   if (lower === "standard") return "Estándar";
+    -   if (lower === "public-domain") return "Dominio público";
+    -   if (lower === "cc-by") return "CC BY";
+    -   if (lower === "cc-by-nc") return "CC BY-NC";
+    -   if (lower === "copyright") return "Copyright";
+    -   return license;
+    - }
+    - const buildStars = (value) => {
+    -   const score = Math.max(0, Math.min(5, Math.round(Number(value) || 0)));
+    -   return "★".repeat(score) + "☆".repeat(5 - score);
+    - }
     - const primaryMedia = post.primaryMedia || (post.media && post.media.length ? post.media[0] : null)
     - const watermarkLabel = primaryMedia ? (primaryMedia.watermark_text || (primaryMedia.license === "copyright" ? "Copyright" : null)) : null
+    - const displayTitle = normalizeSeedTitle(post)
+    - const displayDescription = normalizeSeedDescription(post.description)
+    - const displayTags = getVisibleTags(post.tags)
+    - const displayLicense = primaryMedia ? normalizeLicense(primaryMedia.license) : null
     section.page-section.detail-grid
       article.detail-card
         .detail-card__hero
           .detail-card__hero-media
             if post.canShowPrimaryMedia && primaryMedia && primaryMedia.type === "image"
               .detail-card__media-frame
-                img(src=primaryMedia.url alt=post.title)
+                img(src=primaryMedia.url alt=displayTitle)
                 if watermarkLabel
                   span.detail-card__watermark= watermarkLabel
             else if post.isMediaRestrictedForAnonymous
-              .media-guard.media-guard--detail
+              .media-guard.media-guard--soft.media-guard--detail
+                span.media-guard__eyebrow Vista limitada
                 strong Contenido restringido
-                p.text-muted= post.mediaRestrictionMessage
+                p.text-muted Disponible solo para usuarios registrados o limitado por licencia.
           .detail-card__content
             if formError
               .alert= formError
-            h1.detail-card__title= post.title
+            h1.detail-card__title= displayTitle
             .detail-meta
               span= post.user ? `Por ${post.user.username}` : "Sin usuario"
-              span= `Estado: ${post.status}`
-              span= post.comments_enabled ? "Comentarios habilitados" : "Comentarios cerrados"
-            if primaryMedia && primaryMedia.license
+              span= post.status === "active" ? "Publicación activa" : `Estado: ${post.status}`
+              span= post.comments_enabled ? "Comentarios abiertos" : "Comentarios cerrados"
+            if displayLicense
               .badge-row
-                span.badge Licencia: #{primaryMedia.license}
+                span.badge Licencia: #{displayLicense}
                 if primaryMedia.watermark_text
                   span.badge Marca de agua: #{primaryMedia.watermark_text}
-            if post.description
-              p.section-description= post.description
+            if displayDescription
+              p.section-description= displayDescription
             .badge-row
               a.badge.badge--link(href=`/users/${post.user_id}`) Ver perfil del autor
-              if post.tags && post.tags.length
-                each tag in post.tags
-                  a.badge.badge--link(href=`/posts/tags/${tag.id}`)= tag.name
+              if displayTags.length
+                each tag in displayTags
+                  a.badge.badge--link(href=`/posts/tags/${tag.id}`)= tag.label
 
             .metric-grid
               .metric
-                .metric__label Valoraciones
-                .metric__value= ratingSummary && ratingSummary.total ? ratingSummary.total : 0
-              .metric
                 .metric__label Promedio
-                .metric__value= ratingSummary && ratingSummary.average ? ratingSummary.average : "Sin datos"
+                .metric__value.metric__value--stars
+                  if ratingSummary && ratingSummary.average
+                    | #{buildStars(ratingSummary.average)} #{ratingSummary.average}
+                  else
+                    | Sin valoraciones todavía
+              .metric
+                .metric__label Valoraciones
+                .metric__value= ratingSummary && ratingSummary.total ? `${ratingSummary.total} registradas` : "0 valoraciones"
               .metric
                 .metric__label Denuncias
                 .metric__value= typeof totalReports === "number" ? totalReports : 0
 
             .footer-link-row
               a.button.button--ghost(href="/posts") Volver al listado
-              a.button.button--soft(href=`/search?q=${encodeURIComponent(post.title)}`) Buscar relacionado
+              a.button.button--soft(href=`/search?q=${encodeURIComponent(post.title)}`) Buscar similares
               if currentUserOwnsPost
                 if isEditBlocked
                   span.text-muted No puedes editar esta publicación porque tiene denuncias activas.
@@ -93,18 +148,25 @@ block content
               if currentUserOwnsPost
                 p.text-muted No puedes valorar tu propia publicación.
               else if ratingSummary && ratingSummary.currentUserRating
-                p.text-muted= `Ya valoraste esta publicación con ${ratingSummary.currentUserRating.points} / 5.`
+                p.text-muted
+                  span.rating-summary__stars= buildStars(ratingSummary.currentUserRating.points)
+                  |  Ya valoraste esta publicación con #{ratingSummary.currentUserRating.points} de 5.
               else
                 p.text-muted Todavía no valoraste esta publicación.
                 form.form-grid(action=`/posts/${post.id}/ratings` method="POST")
-                  .form-field
-                    label(for="points") Puntaje
-                    select#points.form-select(name="points" required)
-                      option(value="1") 1
-                      option(value="2") 2
-                      option(value="3") 3
-                      option(value="4") 4
-                      option(value="5") 5
+                  fieldset.rating-stars
+                    legend.rating-stars__legend Elegí un puntaje
+                    .rating-stars__inputs
+                      input#points-5.rating-stars__input(type="radio" name="points" value="5" required)
+                      label.rating-stars__label(for="points-5" aria-label="5 estrellas") ★
+                      input#points-4.rating-stars__input(type="radio" name="points" value="4")
+                      label.rating-stars__label(for="points-4" aria-label="4 estrellas") ★
+                      input#points-3.rating-stars__input(type="radio" name="points" value="3")
+                      label.rating-stars__label(for="points-3" aria-label="3 estrellas") ★
+                      input#points-2.rating-stars__input(type="radio" name="points" value="2")
+                      label.rating-stars__label(for="points-2" aria-label="2 estrellas") ★
+                      input#points-1.rating-stars__input(type="radio" name="points" value="1")
+                      label.rating-stars__label(for="points-1" aria-label="1 estrella") ★
                   button.button.button--dark(type="submit") Guardar valoración
 
             .panel

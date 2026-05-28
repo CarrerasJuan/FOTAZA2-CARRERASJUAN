@@ -647,6 +647,16 @@ select {
   overflow: hidden;
 }
 
+.feed-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.feed-card__media {
+  min-height: 250px;
+}
+
 .feed-card__media img,
 .collection-card__media img,
 .profile-card__media img {
@@ -668,6 +678,13 @@ select {
   color: var(--text);
 }
 
+.media-guard__eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .media-guard strong {
   font-size: 1rem;
 }
@@ -684,6 +701,11 @@ select {
   color: var(--text);
 }
 
+.media-guard--card,
+.media-guard--detail {
+  border: 1px solid rgba(217, 206, 190, 0.85);
+}
+
 .feed-card__body,
 .collection-card__body,
 .search-card__body,
@@ -698,6 +720,26 @@ select {
 .search-card__title {
   margin: 0 0 8px;
   font-size: 1.15rem;
+}
+
+.feed-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.feed-card__body .inline-actions {
+  margin-top: auto;
+}
+
+.feed-card__title,
+.detail-card__title {
+  text-wrap: balance;
+}
+
+.feed-rating {
+  font-weight: 500;
 }
 
 .feed-card--feature {
@@ -740,6 +782,10 @@ select {
   background: var(--surface-alt);
   color: var(--text);
   font-size: 0.92rem;
+}
+
+.badge-row .badge {
+  background: rgba(244, 239, 231, 0.9);
 }
 
 .chip--link:hover,
@@ -841,6 +887,58 @@ select {
   margin-top: 6px;
   font-size: 1.2rem;
   font-weight: 700;
+}
+
+.metric__value--stars {
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+.rating-summary__stars {
+  color: #bc7a45;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+}
+
+.rating-stars {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.rating-stars__legend {
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.rating-stars__inputs {
+  display: inline-flex;
+  flex-direction: row-reverse;
+  gap: 4px;
+}
+
+.rating-stars__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rating-stars__label {
+  font-size: 2rem;
+  line-height: 1;
+  color: #d1c6b8;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.rating-stars__label:hover,
+.rating-stars__label:hover ~ .rating-stars__label,
+.rating-stars__input:checked ~ .rating-stars__label {
+  color: #bc7a45;
+}
+
+.rating-stars__label:hover {
+  transform: translateY(-1px);
 }
 
 .form-shell {

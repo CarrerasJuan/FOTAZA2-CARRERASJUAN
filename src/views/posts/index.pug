@@ -1,6 +1,50 @@
 extends ../layouts/main
 
 block content
+  - const technicalTags = new Set(["seedpublic", "seedrestricted", "seeddelete", "fase5c", "edit", "delete", "restricted"])
+  - const normalizeTagLabel = (name) => {
+  -   if (!name) return null;
+  -   const lower = String(name).trim().toLowerCase();
+  -   if (technicalTags.has(lower)) return null;
+  -   if (lower === "public") return "Público";
+  -   return name;
+  - }
+  - const getVisibleTags = (tags) => (tags || []).map((tag) => ({ id: tag.id, label: normalizeTagLabel(tag.name) })).filter((tag) => tag.label)
+  - const normalizeSeedTitle = (post) => {
+  -   const rawTitle = post && post.title ? String(post.title).trim() : "";
+  -   const lower = rawTitle.toLowerCase();
+  -   const visibleTags = getVisibleTags(post && post.tags);
+  -   const isRestricted = lower.includes("restricted") || (!post.canShowPrimaryMedia && post.isMediaRestrictedForAnonymous);
+  -   if (!rawTitle) return "Contenido visual";
+  -   if (lower.includes("public seed")) return "Publicación pública";
+  -   if (lower.includes("restricted seed")) return "Publicación restringida";
+  -   if (lower.includes("disposable seed")) return "Imagen de prueba";
+  -   if (lower.includes("seed") || /\b\d{6,}\b/.test(rawTitle)) {
+  -     if (isRestricted) return "Contenido visual restringido";
+  -     if (visibleTags.some((tag) => tag.label === "Público")) return "Publicación pública";
+  -     return "Contenido visual";
+  -   }
+  -   return rawTitle;
+  - }
+  - const normalizeSeedDescription = (description) => {
+  -   if (!description) return null;
+  -   const text = String(description).trim();
+  -   const lower = text.toLowerCase();
+  -   if (!text) return null;
+  -   if (lower.includes("seed") || lower.includes("fase5c") || lower.includes("disposable")) {
+  -     return "Publicación visual disponible para explorar dentro de la comunidad.";
+  -   }
+  -   return text;
+  - }
+  - const getRatingAverage = (ratings) => {
+  -   if (!ratings || !ratings.length) return null;
+  -   const avg = ratings.reduce((sum, rating) => sum + Number(rating.points || 0), 0) / ratings.length;
+  -   return avg.toFixed(1);
+  - }
+  - const buildStars = (value) => {
+  -   const score = Math.max(0, Math.min(5, Math.round(Number(value) || 0)));
+  -   return "★".repeat(score) + "☆".repeat(5 - score);
+  - }
   section.page-section
     .panel
       span.section-eyebrow Feed visual
@@ -16,37 +60,48 @@ block content
     section.page-section
       .panel
         span.section-eyebrow Tag activo
-        h2= currentTag.name
+        h2= normalizeTagLabel(currentTag.name) || "Selección curada"
         p.text-muted Estás viendo publicaciones relacionadas con este tag.
 
   section.page-section
     if posts.length
       .grid.grid--cards
         each post in posts
+          - const displayTitle = normalizeSeedTitle(post)
+          - const displayDescription = normalizeSeedDescription(post.description)
+          - const displayTags = getVisibleTags(post.tags)
+          - const ratingCount = post.ratings && post.ratings.length ? post.ratings.length : 0
+          - const ratingAverage = getRatingAverage(post.ratings)
           article.feed-card
             .feed-card__media
               if post.canShowPrimaryMedia && post.primaryMedia && post.primaryMedia.type === "image"
-                img(src=post.primaryMedia.url alt=post.title)
+                img(src=post.primaryMedia.url alt=displayTitle)
               else if post.isMediaRestrictedForAnonymous
-                .media-guard
+                .media-guard.media-guard--soft.media-guard--card
+                  span.media-guard__eyebrow Vista limitada
                   strong Contenido restringido
-                  p.text-muted= post.mediaRestrictionMessage
+                  p.text-muted Disponible solo para usuarios registrados o limitado por licencia.
               else
-                .hero__mini-card
-                  .hero__card-overlay
-                    strong= post.title
+                .media-guard.media-guard--soft.media-guard--card
+                  span.media-guard__eyebrow Sin vista previa
+                  strong= displayTitle
+                  p.text-muted Contenido visual disponible dentro de la comunidad.
             .feed-card__body
-              h2.feed-card__title= post.title
+              h2.feed-card__title= displayTitle
               .feed-meta
                 span= post.user ? `Por ${post.user.username}` : "Sin usuario"
-                span= `Valoraciones: ${post.ratings && post.ratings.length ? post.ratings.length : 0}`
-                span= post.comments_enabled ? "Comentarios habilitados" : "Comentarios cerrados"
-              if post.description
-                p.text-muted= post.description
-              if post.tags && post.tags.length
+                span.feed-rating
+                  if ratingCount
+                    | #{buildStars(ratingAverage)} #{ratingAverage} · #{ratingCount} valoraciones
+                  else
+                    | Sin valoraciones todavía
+                span= post.comments_enabled ? "Comentarios abiertos" : "Comentarios cerrados"
+              if displayDescription
+                p.text-muted= displayDescription
+              if displayTags.length
                 .badge-row
-                  each tag in post.tags
-                    a.badge.badge--link(href=`/posts/tags/${tag.id}`)= tag.name
+                  each tag in displayTags
+                    a.badge.badge--link(href=`/posts/tags/${tag.id}`)= tag.label
               .inline-actions
                 a.button.button--dark.button--small(href=`/posts/${post.id}`) Ver detalle
     else

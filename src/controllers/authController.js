@@ -1,4 +1,3 @@
-const bcrypt = require("bcrypt");
 const { User } = require("../models");
 
 const index = (req, res) => {
@@ -43,12 +42,10 @@ const register = async (req, res, next) => {
             });
         }
 
-        const passwordHash = await bcrypt.hash(password, 10);
-
         const user = await User.create({
             username,
             email,
-            password: passwordHash
+            password
         });
 
         req.session.user = {
@@ -98,7 +95,7 @@ const login = async (req, res, next) => {
         if (!user) {
             return res.status(401).render("auth/login", {
                 title: "Iniciar sesión",
-                error: "Credenciales inválidas.",
+                error: "Usuario o contraseña incorrectos.",
                 values: {
                     email
                 }
@@ -115,12 +112,12 @@ const login = async (req, res, next) => {
             });
         }
 
-        const isValidPassword = await bcrypt.compare(password, user.password);
+        const isValidPassword = await user.validatePassword(password);
 
         if (!isValidPassword) {
             return res.status(401).render("auth/login", {
                 title: "Iniciar sesión",
-                error: "Credenciales inválidas.",
+                error: "Usuario o contraseña incorrectos.",
                 values: {
                     email
                 }
