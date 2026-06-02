@@ -65,7 +65,7 @@ const initializeUser = (sequelize) => {
             updatedAt: "updated_at",
             hooks: {
                 beforeSave: async (user) => {
-                    if (!user.changed("password")) {
+                    if (!user.password || !user.changed("password")) {
                         return;
                     }
 

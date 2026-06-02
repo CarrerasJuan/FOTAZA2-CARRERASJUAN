@@ -3,9 +3,10 @@ require("dotenv").config({ override: true, quiet: true });
 const fs = require("fs/promises");
 const path = require("path");
 const { Client } = require("pg");
+const { sequelize } = require("../models");
+const { seedDemoData } = require("./seedDemoData");
 
 const schemaPath = path.resolve(__dirname, "..", "..", "database", "fotaza_schema.sql");
-const seedPath = path.resolve(__dirname, "..", "..", "database", "fotaza_seed.sql");
 
 const requiredEnvironmentVariables = [
     "DB_HOST",
@@ -46,7 +47,6 @@ const initializeDatabase = async () => {
     ensureEnvironment();
 
     const schemaSql = await readSqlFile(schemaPath);
-    const seedSql = await readSqlFile(seedPath);
     const client = createClient();
 
     console.log("Inicializando base de datos...");
@@ -61,14 +61,15 @@ const initializeDatabase = async () => {
         console.log("Ejecutando schema SQL oficial...");
         await client.query(schemaSql);
 
-        console.log("Cargando datos semilla...");
-        await client.query(seedSql);
+        console.log("Cargando datos demo con Sequelize...");
+        await seedDemoData();
 
         console.log("Inicializacion finalizada correctamente.");
     } catch (error) {
         console.error("Error al inicializar la base de datos.");
         throw error;
     } finally {
+        await sequelize.close();
         await client.end();
     }
 };
