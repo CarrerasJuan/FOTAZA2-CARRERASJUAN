@@ -1,6 +1,6 @@
 const requireRole = (...allowedRoles) => {
     return (req, res, next) => {
-        const currentUser = req.session?.user;
+        const currentUser = req.currentUser;
 
         if (!currentUser) {
             return res.status(401).json({

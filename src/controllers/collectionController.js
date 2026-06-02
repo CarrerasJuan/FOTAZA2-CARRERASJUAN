@@ -14,7 +14,7 @@ const index = async (req, res, next) => {
     try {
         const collections = await Collection.findAll({
             where: {
-                user_id: req.session.user.id
+                user_id: req.currentUser.id
             },
             include: [
                 {
@@ -70,7 +70,7 @@ const create = async (req, res, next) => {
         }
 
         const collection = await Collection.create({
-            user_id: req.session.user.id,
+            user_id: req.currentUser.id,
             name
         });
 
@@ -131,7 +131,7 @@ const show = async (req, res, next) => {
             });
         }
 
-        if (collection.user_id !== req.session.user.id) {
+        if (collection.user_id !== req.currentUser.id) {
             return res.status(403).json({
                 message: "No tienes permisos para acceder a esta colección."
             });
@@ -167,7 +167,7 @@ const addItem = async (req, res, next) => {
             });
         }
 
-        if (collection.user_id !== req.session.user.id) {
+        if (collection.user_id !== req.currentUser.id) {
             return res.status(403).json({
                 message: "No tienes permisos para modificar esta colección."
             });

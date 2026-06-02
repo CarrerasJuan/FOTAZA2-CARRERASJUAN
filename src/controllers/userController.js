@@ -22,6 +22,7 @@ const show = async (req, res, next) => {
                 {
                     model: Post,
                     as: "posts",
+                    required: false,
                     include: [
                         {
                             model: Media,
@@ -53,11 +54,11 @@ const show = async (req, res, next) => {
             }
         });
 
-        const isFollowing = req.session?.user
+        const isFollowing = req.currentUser
             ? Boolean(
                 await Follow.findOne({
                     where: {
-                        follower_id: req.session.user.id,
+                        follower_id: req.currentUser.id,
                         following_id: profileUser.id
                     }
                 })
@@ -100,7 +101,7 @@ const showEditForm = async (req, res, next) => {
             });
         }
 
-        if (req.session.user.id !== profileUser.id) {
+        if (req.currentUser.id !== profileUser.id) {
             return res.status(403).json({
                 message: "No tienes permisos para editar este perfil."
             });
@@ -149,7 +150,7 @@ const update = async (req, res, next) => {
             });
         }
 
-        if (req.session.user.id !== profileUser.id) {
+        if (req.currentUser.id !== profileUser.id) {
             return res.status(403).json({
                 message: "No tienes permisos para editar este perfil."
             });
@@ -161,12 +162,6 @@ const update = async (req, res, next) => {
             biography: biography || null,
             avatar_url: avatar_url || null
         });
-
-        req.session.user = {
-            ...req.session.user,
-            username: profileUser.username,
-            email: profileUser.email
-        };
 
         return res.redirect(`/users/${profileUser.id}`);
     } catch (error) {

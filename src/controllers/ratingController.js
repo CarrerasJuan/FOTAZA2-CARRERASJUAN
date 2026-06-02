@@ -30,14 +30,14 @@ const ratePost = async (req, res, next) => {
             return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("La valoración debe estar entre 1 y 5.")}`);
         }
 
-        if (post.user_id === req.session.user.id) {
+        if (post.user_id === req.currentUser.id) {
             return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("No puedes valorar tu propia publicación.")}`);
         }
 
         const existingRating = await Rating.findOne({
             where: {
                 post_id: post.id,
-                user_id: req.session.user.id
+                user_id: req.currentUser.id
             }
         });
 
@@ -48,14 +48,14 @@ const ratePost = async (req, res, next) => {
         const now = new Date();
         const rating = await Rating.create({
             post_id: post.id,
-            user_id: req.session.user.id,
+            user_id: req.currentUser.id,
             points: parsedPoints,
             created_at: now
         });
 
         const notification = await Notification.create({
             user_id: post.user_id,
-            actor_id: req.session.user.id,
+            actor_id: req.currentUser.id,
             type: "rating",
             is_read: false,
             created_at: now

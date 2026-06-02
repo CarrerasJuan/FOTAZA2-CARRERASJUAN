@@ -9,7 +9,7 @@ const index = async (req, res, next) => {
     try {
         const interests = await Interest.findAll({
             where: {
-                user_id: req.session.user.id
+                user_id: req.currentUser.id
             },
             include: [
                 {
@@ -61,27 +61,27 @@ const create = async (req, res, next) => {
             });
         }
 
-        if (post.user_id === req.session.user.id) {
+        if (post.user_id === req.currentUser.id) {
             return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("No puedes marcar interés en tu propia publicación.")}`);
         }
 
         const now = new Date();
         const [interest, created] = await Interest.findOrCreate({
             where: {
-                user_id: req.session.user.id,
+                user_id: req.currentUser.id,
                 post_id: post.id
             },
             defaults: {
-                user_id: req.session.user.id,
+                user_id: req.currentUser.id,
                 post_id: post.id,
                 created_at: now
             }
         });
 
-        if (created && post.user_id !== req.session.user.id) {
+        if (created && post.user_id !== req.currentUser.id) {
             const notification = await Notification.create({
                 user_id: post.user_id,
-                actor_id: req.session.user.id,
+                actor_id: req.currentUser.id,
                 type: "interest",
                 is_read: false,
                 created_at: now
@@ -116,7 +116,7 @@ const remove = async (req, res, next) => {
 
         await Interest.destroy({
             where: {
-                user_id: req.session.user.id,
+                user_id: req.currentUser.id,
                 post_id: postId
             }
         });

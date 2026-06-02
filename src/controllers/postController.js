@@ -373,7 +373,7 @@ const index = async (req, res, next) => {
             include: postFeedInclude,
             order: [["created_at", "DESC"]]
         });
-        const visiblePosts = applyMediaVisibilityToPosts(posts, Boolean(req.session?.user));
+        const visiblePosts = applyMediaVisibilityToPosts(posts, Boolean(req.currentUser));
 
         return res.status(200).render("posts/index", {
             title: "Publicaciones",
@@ -464,40 +464,40 @@ const show = async (req, res, next) => {
         const ratingAverage = totalRatings
             ? (ratings.reduce((sum, rating) => sum + rating.points, 0) / totalRatings).toFixed(1)
             : null;
-        const currentUserRating = req.session?.user
-            ? ratings.find((rating) => rating.user_id === req.session.user.id) || null
+        const currentUserRating = req.currentUser
+            ? ratings.find((rating) => rating.user_id === req.currentUser.id) || null
             : null;
         const totalReports = post.reports ? post.reports.length : 0;
         const hasActiveReports = post.reports
             ? post.reports.some((report) => ACTIVE_REPORT_STATUSES.includes(report.status))
             : false;
-        const currentUserOwnsPost = Boolean(req.session?.user && post.user_id === req.session.user.id);
-        const currentUserCanRate = Boolean(req.session?.user && !currentUserOwnsPost && !currentUserRating);
+        const currentUserOwnsPost = Boolean(req.currentUser && post.user_id === req.currentUser.id);
+        const currentUserCanRate = Boolean(req.currentUser && !currentUserOwnsPost && !currentUserRating);
         const currentUserCanReport = Boolean(
-            req.session?.user
+            req.currentUser
             && !currentUserOwnsPost
-            && !(post.reports || []).some((report) => report.reporter_id === req.session.user.id && ACTIVE_REPORT_STATUSES.includes(report.status))
+            && !(post.reports || []).some((report) => report.reporter_id === req.currentUser.id && ACTIVE_REPORT_STATUSES.includes(report.status))
         );
 
-        const userCollections = req.session?.user
+        const userCollections = req.currentUser
             ? await Collection.findAll({
                 where: {
-                    user_id: req.session.user.id
+                    user_id: req.currentUser.id
                 },
                 attributes: ["id", "name"],
                 order: [["name", "ASC"]]
             })
             : [];
 
-        const currentUserInterest = req.session?.user
+        const currentUserInterest = req.currentUser
             ? await Interest.findOne({
                 where: {
-                    user_id: req.session.user.id,
+                    user_id: req.currentUser.id,
                     post_id: post.id
                 }
             })
             : null;
-        applyMediaVisibilityToPost(post, Boolean(req.session?.user));
+        applyMediaVisibilityToPost(post, Boolean(req.currentUser));
 
         return res.status(200).render("posts/show", {
             title: post.title,
@@ -542,14 +542,14 @@ const followingFeed = async (req, res, next) => {
     try {
         const followedUsers = await Follow.findAll({
             where: {
-                follower_id: req.session.user.id
+                follower_id: req.currentUser.id
             },
             attributes: ["following_id"]
         });
 
         const followedUserIds = followedUsers
             .map((follow) => follow.following_id)
-            .filter((userId) => userId !== req.session.user.id);
+            .filter((userId) => userId !== req.currentUser.id);
 
         const posts = followedUserIds.length
             ? await Post.findAll({
@@ -562,7 +562,7 @@ const followingFeed = async (req, res, next) => {
                 order: [["created_at", "DESC"]]
             })
             : [];
-        const visiblePosts = applyMediaVisibilityToPosts(posts, true);
+        const visiblePosts = applyMediaVisibilityToPosts(posts, Boolean(req.currentUser));
 
         return res.status(200).render("posts/index", {
             title: "Publicaciones de seguidos",
@@ -660,7 +660,7 @@ const create = async (req, res, next) => {
         const now = new Date();
 
         const post = await Post.create({
-            user_id: req.session.user.id,
+            user_id: req.currentUser.id,
             title,
             description: description || null,
             comments_enabled: comments_enabled === "on",
@@ -736,7 +736,7 @@ const showEditForm = async (req, res, next) => {
             });
         }
 
-        if (post.user_id !== req.session.user.id) {
+        if (post.user_id !== req.currentUser.id) {
             return res.status(403).json({
                 message: "No tienes permisos para editar esta publicación."
             });
@@ -804,7 +804,7 @@ const update = async (req, res, next) => {
             });
         }
 
-        if (post.user_id !== req.session.user.id) {
+        if (post.user_id !== req.currentUser.id) {
             return res.status(403).json({
                 message: "No tienes permisos para editar esta publicación."
             });
@@ -963,7 +963,7 @@ const remove = async (req, res, next) => {
             });
         }
 
-        if (post.user_id !== req.session.user.id) {
+        if (post.user_id !== req.currentUser.id) {
             return res.status(403).json({
                 message: "No tienes permisos para eliminar esta publicación."
             });
@@ -1014,7 +1014,7 @@ const showByTag = async (req, res, next) => {
             ],
             order: [["created_at", "DESC"]]
         });
-        const visiblePosts = applyMediaVisibilityToPosts(posts, Boolean(req.session?.user));
+        const visiblePosts = applyMediaVisibilityToPosts(posts, Boolean(req.currentUser));
 
         return res.status(200).render("posts/index", {
             title: `Publicaciones con tag: ${tag.name}`,

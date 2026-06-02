@@ -14,6 +14,7 @@ const { Post, User, Media, Tag } = require("./models");
 const { applyMediaVisibilityToPosts } = require("./utils/mediaVisibility");
 
 const app = express();
+const SESSION_COOKIE_NAME = "connect.sid";
 
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "views"));
@@ -24,12 +25,47 @@ app.use(
     session({
         secret: process.env.SESSION_SECRET || "fotaza_session_secret",
         resave: false,
-        saveUninitialized: false
+        saveUninitialized: false,
+        name: SESSION_COOKIE_NAME
     })
 );
-app.use((req, res, next) => {
-    res.locals.sessionUser = req.session?.user || null;
-    next();
+app.use(async (req, res, next) => {
+    req.currentUser = null;
+
+    if (!req.session?.userId) {
+        res.locals.sessionUser = null;
+        return next();
+    }
+
+    try {
+        const currentUser = await User.findByPk(req.session.userId, {
+            attributes: ["id", "username", "email", "role", "status"]
+        });
+
+        if (!currentUser) {
+            return req.session.destroy((error) => {
+                if (error) {
+                    return next(error);
+                }
+
+                res.clearCookie(SESSION_COOKIE_NAME);
+
+                if (req.accepts("html")) {
+                    return res.redirect("/auth/login");
+                }
+
+                return res.status(401).json({
+                    message: "Tu sesión ya no es válida. Inicia sesión nuevamente."
+                });
+            });
+        }
+
+        req.currentUser = currentUser;
+        res.locals.sessionUser = currentUser;
+        return next();
+    } catch (error) {
+        return next(error);
+    }
 });
 app.use(express.static(path.join(__dirname, "..", "public")));
 
@@ -59,7 +95,7 @@ app.get("/", async (req, res, next) => {
             order: [["created_at", "DESC"]],
             limit: 4
         });
-        const visibleFeaturedPosts = applyMediaVisibilityToPosts(featuredPosts, Boolean(req.session?.user));
+        const visibleFeaturedPosts = applyMediaVisibilityToPosts(featuredPosts, Boolean(req.currentUser));
 
         const featuredTags = await Tag.findAll({
             attributes: ["id", "name"],

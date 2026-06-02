@@ -22,7 +22,7 @@ const index = async (req, res, next) => {
     try {
         const notifications = await Notification.findAll({
             where: {
-                user_id: req.session.user.id
+                user_id: req.currentUser.id
             },
             include: [
                 {
@@ -118,7 +118,7 @@ const markAsRead = async (req, res, next) => {
         const notification = await Notification.findOne({
             where: {
                 id: notificationId,
-                user_id: req.session.user.id
+                user_id: req.currentUser.id
             }
         });
 

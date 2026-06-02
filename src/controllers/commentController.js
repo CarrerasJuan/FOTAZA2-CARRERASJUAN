@@ -41,7 +41,7 @@ const create = async (req, res, next) => {
 
         const comment = await Comment.create({
             post_id: post.id,
-            user_id: req.session.user.id,
+            user_id: req.currentUser.id,
             content,
             status: "active"
             ,
@@ -49,10 +49,10 @@ const create = async (req, res, next) => {
             updated_at: now
         });
 
-        if (post.user_id !== req.session.user.id) {
+        if (post.user_id !== req.currentUser.id) {
             const notification = await Notification.create({
                 user_id: post.user_id,
-                actor_id: req.session.user.id,
+                actor_id: req.currentUser.id,
                 type: "comment",
                 is_read: false,
                 created_at: now

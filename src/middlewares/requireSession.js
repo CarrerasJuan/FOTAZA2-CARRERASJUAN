@@ -1,5 +1,5 @@
 const requireSession = (req, res, next) => {
-    if (req.session && req.session.user) {
+    if (req.currentUser) {
         return next();
     }
 

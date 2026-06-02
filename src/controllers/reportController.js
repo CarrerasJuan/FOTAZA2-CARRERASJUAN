@@ -32,13 +32,13 @@ const reportPost = async (req, res, next) => {
             return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("Debes indicar un motivo para la denuncia.")}`);
         }
 
-        if (post.user_id === req.session.user.id) {
+        if (post.user_id === req.currentUser.id) {
             return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("No puedes denunciar tu propia publicación.")}`);
         }
 
         const existingReport = await Report.findOne({
             where: {
-                reporter_id: req.session.user.id,
+                reporter_id: req.currentUser.id,
                 post_id: post.id,
                 status: {
                     [Op.in]: ["pending", "active"]
@@ -52,7 +52,7 @@ const reportPost = async (req, res, next) => {
 
         const now = new Date();
         const report = await Report.create({
-            reporter_id: req.session.user.id,
+            reporter_id: req.currentUser.id,
             reported_user_id: post.user_id,
             post_id: post.id,
             comment_id: null,
@@ -65,7 +65,7 @@ const reportPost = async (req, res, next) => {
 
         const notification = await Notification.create({
             user_id: post.user_id,
-            actor_id: req.session.user.id,
+            actor_id: req.currentUser.id,
             type: "report",
             is_read: false,
             created_at: now

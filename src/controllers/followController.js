@@ -16,7 +16,7 @@ const followUser = async (req, res, next) => {
             });
         }
 
-        if (targetUserId === req.session.user.id) {
+        if (targetUserId === req.currentUser.id) {
             return res.redirect(`/users/${targetUserId}`);
         }
 
@@ -31,11 +31,11 @@ const followUser = async (req, res, next) => {
 
         const [follow, created] = await Follow.findOrCreate({
             where: {
-                follower_id: req.session.user.id,
+                follower_id: req.currentUser.id,
                 following_id: targetUserId
             },
             defaults: {
-                follower_id: req.session.user.id,
+                follower_id: req.currentUser.id,
                 following_id: targetUserId,
                 created_at: new Date()
             }
@@ -45,7 +45,7 @@ const followUser = async (req, res, next) => {
             const now = new Date();
             const notification = await Notification.create({
                 user_id: targetUserId,
-                actor_id: req.session.user.id,
+                actor_id: req.currentUser.id,
                 type: "follow",
                 is_read: false,
                 created_at: now
@@ -76,7 +76,7 @@ const unfollowUser = async (req, res, next) => {
 
         await Follow.destroy({
             where: {
-                follower_id: req.session.user.id,
+                follower_id: req.currentUser.id,
                 following_id: targetUserId
             }
         });

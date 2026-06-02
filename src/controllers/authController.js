@@ -1,5 +1,8 @@
 const { User } = require("../models");
 
+const SESSION_COOKIE_NAME = "connect.sid";
+const INVALID_CREDENTIALS_MESSAGE = "Sus credenciales son incorrectas.";
+
 const index = (req, res) => {
     return res.redirect("/auth/login");
 };
@@ -48,13 +51,7 @@ const register = async (req, res, next) => {
             password
         });
 
-        req.session.user = {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            role: user.role,
-            status: user.status
-        };
+        req.session.userId = user.id;
 
         return res.redirect("/posts");
     } catch (error) {
@@ -95,7 +92,7 @@ const login = async (req, res, next) => {
         if (!user) {
             return res.status(401).render("auth/login", {
                 title: "Iniciar sesión",
-                error: "Usuario o contraseña incorrectos.",
+                error: INVALID_CREDENTIALS_MESSAGE,
                 values: {
                     email
                 }
@@ -117,20 +114,14 @@ const login = async (req, res, next) => {
         if (!isValidPassword) {
             return res.status(401).render("auth/login", {
                 title: "Iniciar sesión",
-                error: "Usuario o contraseña incorrectos.",
+                error: INVALID_CREDENTIALS_MESSAGE,
                 values: {
                     email
                 }
             });
         }
 
-        req.session.user = {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            role: user.role,
-            status: user.status
-        };
+        req.session.userId = user.id;
 
         return res.redirect("/posts");
     } catch (error) {
@@ -144,6 +135,7 @@ const logout = (req, res, next) => {
             return next(error);
         }
 
+        res.clearCookie(SESSION_COOKIE_NAME);
         return res.redirect("/auth/login");
     });
 };
