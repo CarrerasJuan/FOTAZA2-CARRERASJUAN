@@ -93,9 +93,13 @@ app.get("/", async (req, res, next) => {
                 }
             ],
             order: [["created_at", "DESC"]],
-            limit: 4
+            limit: 12
         });
-        const visibleFeaturedPosts = applyMediaVisibilityToPosts(featuredPosts, Boolean(req.currentUser));
+        const featuredPostsWithVisibility = applyMediaVisibilityToPosts(featuredPosts, Boolean(req.currentUser));
+        const visibleFeaturedPosts = featuredPostsWithVisibility
+            .filter((post) => post.canShowPrimaryMedia)
+            .concat(featuredPostsWithVisibility.filter((post) => !post.canShowPrimaryMedia))
+            .slice(0, 4);
 
         const featuredTags = await Tag.findAll({
             attributes: ["id", "name"],
