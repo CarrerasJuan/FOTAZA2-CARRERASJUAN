@@ -62,7 +62,9 @@ block content
               .detail-card__media-frame
                 img(src=primaryMedia.url alt=displayTitle)
                 if watermarkLabel
-                  span.detail-card__watermark= watermarkLabel
+                  .detail-card__watermark-grid(aria-hidden="true")
+                    each _ in [1, 2, 3, 4, 5, 6]
+                      span.detail-card__watermark= watermarkLabel
             else if post.isMediaRestrictedForAnonymous
               .media-guard.media-guard--soft.media-guard--detail
                 span.media-guard__eyebrow Vista limitada
@@ -194,19 +196,24 @@ block content
       .panel
         h2 Comentarios
         if post.comments && post.comments.length
-          .comment-list
+          .comment-list(data-comment-list)
             each comment in post.comments
-              article.comment-item
+              article.comment-item(data-comment-item)
                 strong= comment.user ? comment.user.username : "Usuario"
                 p.text-muted= comment.content
+                if sessionUser && (sessionUser.id === comment.user_id || sessionUser.id === post.user_id)
+                  form.comment-item__actions(action=`/posts/${post.id}/comments/${comment.id}/delete` method="POST" data-comment-delete-form)
+                    input(type="hidden" name="redirect_to" value=`/posts/${post.id}`)
+                    button.button.button--ghost.button--small(type="submit") Eliminar comentario
         else
-          .empty-state
+          .empty-state(data-comment-empty-state)
             p No hay comentarios registrados por el momento.
 
       .panel
         h2 Participar
         if sessionUser && post.comments_enabled
           form.form-grid(action=`/posts/${post.id}/comments` method="POST")
+            input(type="hidden" name="redirect_to" value=`/posts/${post.id}`)
             .form-field
               label(for="content") Comentario
               textarea#content.form-textarea(name="content" required)

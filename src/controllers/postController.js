@@ -16,9 +16,16 @@ const {
     NotificationComment,
     NotificationRating,
     NotificationReport,
-    NotificationInterest
+    NotificationInterest,
+    sequelize
 } = require("../models");
 const { applyMediaVisibilityToPost, applyMediaVisibilityToPosts } = require("../utils/mediaVisibility");
+const {
+    isSupabaseStorageConfigured,
+    uploadPostImage: uploadPostImageToStorage,
+    removePostImage
+} = require("../services/mediaStorageService");
+const postWriteController = require("./postWriteController");
 
 const parsePostId = (value) => {
     const parsedId = Number.parseInt(value, 10);
@@ -52,13 +59,14 @@ const normalizeTagNames = (rawTags) => {
     return Array.from(uniqueTags.values());
 };
 
-const syncPostTags = async (postId, rawTags) => {
+const syncPostTags = async (postId, rawTags, transaction = null) => {
     const tagNames = normalizeTagNames(rawTags);
 
     await PostTag.destroy({
         where: {
             post_id: postId
-        }
+        },
+        transaction
     });
 
     for (const tagName of tagNames) {
@@ -67,14 +75,15 @@ const syncPostTags = async (postId, rawTags) => {
                 name: {
                     [Op.iLike]: tagName
                 }
-            }
+            },
+            transaction
         });
 
         if (!tag) {
             tag = await Tag.create({
                 name: tagName,
                 created_at: new Date()
-            });
+            }, { transaction });
         }
 
         await PostTag.findOrCreate({
@@ -85,7 +94,8 @@ const syncPostTags = async (postId, rawTags) => {
             defaults: {
                 post_id: postId,
                 tag_id: tag.id
-            }
+            },
+            transaction
         });
     }
 };
@@ -341,6 +351,60 @@ const buildEditValues = (post, overrides = {}) => {
     };
 };
 
+const buildCreateValues = (overrides = {}) => {
+    return {
+        title: overrides.title ?? "",
+        description: overrides.description ?? "",
+        comments_enabled: overrides.comments_enabled ?? true,
+        media_url: overrides.media_url ?? "",
+        license_option: overrides.license_option ?? DEFAULT_MEDIA_LICENSE,
+        license_custom: overrides.license_custom ?? "",
+        watermark_text: overrides.watermark_text ?? "",
+        tags: overrides.tags ?? ""
+    };
+};
+
+const buildPostFormValuesFromRequest = (req) => {
+    return {
+        title: req.body.title ? req.body.title.trim() : "",
+        description: req.body.description ? req.body.description.trim() : "",
+        media_url: req.body.media_url ? req.body.media_url.trim() : "",
+        license_option: req.body.license_option ? req.body.license_option.trim() : DEFAULT_MEDIA_LICENSE,
+        license_custom: req.body.license_custom ? req.body.license_custom.trim() : "",
+        watermark_text: req.body.watermark_text ? req.body.watermark_text.trim() : "",
+        tags: req.body.tags ? req.body.tags.trim() : "",
+        comments_enabled: req.body.comments_enabled === "on"
+    };
+};
+
+const renderCreateFormWithError = (res, error, values, statusCode = 400) => {
+    return res.status(statusCode).render("posts/create", {
+        title: "Crear publicación",
+        error,
+        values: buildCreateValues(values)
+    });
+};
+
+const resolveMediaSource = async (req) => {
+    if (req.file) {
+        if (!isSupabaseStorageConfigured()) {
+            throw new Error("La subida de imágenes requiere configurar Supabase Storage en el servidor.");
+        }
+
+        return uploadPostImageToStorage({
+            file: req.file,
+            userId: req.currentUser.id
+        });
+    }
+
+    const manualUrl = req.body.media_url ? req.body.media_url.trim() : "";
+
+    return {
+        publicUrl: manualUrl || null,
+        storagePath: null
+    };
+};
+
 const postFeedInclude = [
     {
         model: User,
@@ -358,6 +422,18 @@ const postFeedInclude = [
         attributes: ["id", "user_id", "points"]
     },
     {
+        model: Comment,
+        as: "comments",
+        attributes: ["id", "user_id", "content", "created_at"],
+        include: [
+            {
+                model: User,
+                as: "user",
+                attributes: ["id", "username", "avatar_url"]
+            }
+        ]
+    },
+    {
         model: Tag,
         as: "tags",
         attributes: ["id", "name"],
@@ -371,7 +447,10 @@ const index = async (req, res, next) => {
     try {
         const posts = await Post.findAll({
             include: postFeedInclude,
-            order: [["created_at", "DESC"]]
+            order: [
+                ["created_at", "DESC"],
+                [{ model: Comment, as: "comments" }, "created_at", "DESC"]
+            ]
         });
         const visiblePosts = applyMediaVisibilityToPosts(posts, Boolean(req.currentUser));
 
@@ -525,16 +604,7 @@ const showCreateForm = (req, res) => {
     return res.status(200).render("posts/create", {
         title: "Crear publicación",
         error: null,
-        values: {
-            title: "",
-            description: "",
-            comments_enabled: true,
-            media_url: "",
-            license_option: DEFAULT_MEDIA_LICENSE,
-            license_custom: "",
-            watermark_text: "",
-            tags: ""
-        }
+        values: buildCreateValues()
     });
 };
 
@@ -559,7 +629,10 @@ const followingFeed = async (req, res, next) => {
                     }
                 },
                 include: postFeedInclude,
-                order: [["created_at", "DESC"]]
+                order: [
+                    ["created_at", "DESC"],
+                    [{ model: Comment, as: "comments" }, "created_at", "DESC"]
+                ]
             })
             : [];
         const visiblePosts = applyMediaVisibilityToPosts(posts, Boolean(req.currentUser));
@@ -578,18 +651,18 @@ const followingFeed = async (req, res, next) => {
 };
 
 const create = async (req, res, next) => {
-    const title = req.body.title ? req.body.title.trim() : "";
-    const description = req.body.description ? req.body.description.trim() : "";
-    const media_url = req.body.media_url ? req.body.media_url.trim() : "";
-    const license_option = req.body.license_option ? req.body.license_option.trim() : DEFAULT_MEDIA_LICENSE;
-    const license_custom = req.body.license_custom ? req.body.license_custom.trim() : "";
-    const license = normalizeMediaLicense(license_option, license_custom);
-    const watermark_text = req.body.watermark_text ? req.body.watermark_text.trim() : "";
-    const tags = req.body.tags ? req.body.tags.trim() : "";
-    const comments_enabled = req.body.comments_enabled;
+    const values = buildPostFormValuesFromRequest(req);
+    const license = normalizeMediaLicense(values.license_option, values.license_custom);
+    const hasMediaSource = Boolean(values.media_url || req.file);
+    let uploadedMedia = null;
+    let transaction = null;
 
     try {
-        if (!title) {
+        if (req.fileUploadErrorMessage) {
+            return renderCreateFormWithError(res, req.fileUploadErrorMessage, values);
+        }
+
+        if (!values.title) {
             return res.status(400).render("posts/create", {
                 title: "Crear publicación",
                 error: "El título es obligatorio.",
@@ -1004,15 +1077,18 @@ const showByTag = async (req, res, next) => {
 
         const posts = await Post.findAll({
             include: [
-                ...postFeedInclude.slice(0, 3),
+                ...postFeedInclude.slice(0, 4),
                 {
-                    ...postFeedInclude[3],
+                    ...postFeedInclude[4],
                     where: {
                         id: tag.id
                     }
                 }
             ],
-            order: [["created_at", "DESC"]]
+            order: [
+                ["created_at", "DESC"],
+                [{ model: Comment, as: "comments" }, "created_at", "DESC"]
+            ]
         });
         const visiblePosts = applyMediaVisibilityToPosts(posts, Boolean(req.currentUser));
 
@@ -1034,9 +1110,9 @@ module.exports = {
     show,
     showCreateForm,
     followingFeed,
-    create,
+    create: postWriteController.create,
     showEditForm,
-    update,
+    update: postWriteController.update,
     remove,
     showByTag
 };

@@ -75,7 +75,7 @@ const seedDemoData = async () => {
         const postAtardecer = await Post.create({
             user_id: ana.id,
             title: "Atardecer en la costa",
-            description: "Serie capturada al final de la tarde con luz cálida y un horizonte despejado.",
+            description: "Serie capturada al final de la tarde con luz calida y un horizonte despejado.",
             comments_enabled: true,
             status: "active",
             created_at: "2026-05-21 18:30:00",
@@ -84,8 +84,8 @@ const seedDemoData = async () => {
 
         const postMontana = await Post.create({
             user_id: ana.id,
-            title: "Paisaje de montaña",
-            description: "Vista abierta de la sierra después de una mañana fría y con neblina baja.",
+            title: "Paisaje de montana",
+            description: "Vista abierta de la sierra despues de una manana fria y con neblina baja.",
             comments_enabled: true,
             status: "active",
             created_at: "2026-05-22 08:10:00",
@@ -95,7 +95,7 @@ const seedDemoData = async () => {
         const postRetrato = await Post.create({
             user_id: bruno.id,
             title: "Retrato urbano en San Luis",
-            description: "Retrato espontáneo en vereda con textura de pared y contraste suave de tarde.",
+            description: "Retrato espontaneo en vereda con textura de pared y contraste suave de tarde.",
             comments_enabled: true,
             status: "active",
             created_at: "2026-05-22 09:15:00",
@@ -105,7 +105,7 @@ const seedDemoData = async () => {
         const postMercado = await Post.create({
             user_id: bruno.id,
             title: "Texturas de mercado",
-            description: "Detalles de frutas, carteles pintados a mano y movimiento cotidiano en un mercado local.",
+            description: "Escena documental de mercado con puestos, carteles y circulacion cotidiana en blanco y negro.",
             comments_enabled: true,
             status: "active",
             created_at: "2026-05-22 10:25:00",
@@ -114,8 +114,8 @@ const seedDemoData = async () => {
 
         const postProducto = await Post.create({
             user_id: clara.id,
-            title: "Sesión producto artesanal",
-            description: "Composición de piezas cerámicas con fondo neutro para catálogo y campaña digital.",
+            title: "Sesion de producto artesanal",
+            description: "Composicion de piezas ceramicas con fondo neutro para catalogo y campana digital.",
             comments_enabled: true,
             status: "active",
             created_at: "2026-05-22 11:40:00",
@@ -125,7 +125,7 @@ const seedDemoData = async () => {
         const postEstudio = await Post.create({
             user_id: clara.id,
             title: "Luz de estudio",
-            description: "Esquema de iluminación continua para retrato editorial de perfil corto.",
+            description: "Esquema de iluminacion continua para retrato editorial de perfil corto.",
             comments_enabled: true,
             status: "active",
             created_at: "2026-05-22 16:20:00",
@@ -135,7 +135,7 @@ const seedDemoData = async () => {
         const postArquitectura = await Post.create({
             user_id: tomas.id,
             title: "Arquitectura moderna",
-            description: "Líneas limpias, reflejos en vidrio y encuadre frontal de un edificio contemporáneo.",
+            description: "Lineas limpias, reflejos en vidrio y encuadre frontal de un edificio contemporaneo.",
             comments_enabled: true,
             status: "active",
             created_at: "2026-05-22 16:45:00",
@@ -145,7 +145,7 @@ const seedDemoData = async () => {
         const postNaturaleza = await Post.create({
             user_id: tomas.id,
             title: "Naturaleza serrana",
-            description: "Recorrido visual entre senderos, vegetación baja y luz lateral sobre la piedra.",
+            description: "Recorrido visual entre senderos, vegetacion baja y luz lateral sobre la piedra.",
             comments_enabled: true,
             status: "active",
             created_at: "2026-05-23 08:30:00",
@@ -156,7 +156,7 @@ const seedDemoData = async () => {
             {
                 post_id: postAtardecer.id,
                 type: "image",
-                url: "https://picsum.photos/id/10/1200/800",
+                url: "/images/demo/paisaje-costero.webp",
                 license: "standard",
                 watermark_text: "ANA LEDESMA",
                 created_at: "2026-05-21 18:30:00"
@@ -164,7 +164,7 @@ const seedDemoData = async () => {
             {
                 post_id: postMontana.id,
                 type: "image",
-                url: "https://picsum.photos/id/29/1200/800",
+                url: "/images/demo/paisaje-serrano-neblina.webp",
                 license: "cc-by",
                 watermark_text: "ANA LEDESMA",
                 created_at: "2026-05-22 08:10:00"
@@ -172,7 +172,7 @@ const seedDemoData = async () => {
             {
                 post_id: postRetrato.id,
                 type: "image",
-                url: "https://picsum.photos/id/1011/1200/800",
+                url: "/images/demo/retrato-luz-natural.webp",
                 license: "standard",
                 watermark_text: "BRUNO",
                 created_at: "2026-05-22 09:15:00"
@@ -180,7 +180,7 @@ const seedDemoData = async () => {
             {
                 post_id: postMercado.id,
                 type: "image",
-                url: "https://picsum.photos/id/1080/1200/800",
+                url: "/images/demo/documental-blanco-negro.webp",
                 license: "standard",
                 watermark_text: "BRUNO",
                 created_at: "2026-05-22 10:25:00"
@@ -188,7 +188,7 @@ const seedDemoData = async () => {
             {
                 post_id: postProducto.id,
                 type: "image",
-                url: "https://picsum.photos/id/1060/1200/800",
+                url: "/images/demo/producto-editorial.webp",
                 license: "copyright",
                 watermark_text: "CLARA ESTUDIO",
                 created_at: "2026-05-22 11:40:00"
@@ -196,7 +196,7 @@ const seedDemoData = async () => {
             {
                 post_id: postEstudio.id,
                 type: "image",
-                url: "https://picsum.photos/id/1027/1200/800",
+                url: "/images/demo/retrato-estudio-editorial.webp",
                 license: "standard",
                 watermark_text: "CLARA ESTUDIO",
                 created_at: "2026-05-22 16:20:00"
@@ -204,7 +204,7 @@ const seedDemoData = async () => {
             {
                 post_id: postArquitectura.id,
                 type: "image",
-                url: "https://picsum.photos/id/1031/1200/800",
+                url: "/images/demo/detalle-arquitectonico.webp",
                 license: "cc-by-nc",
                 watermark_text: "TOMAS",
                 created_at: "2026-05-22 16:45:00"
@@ -212,7 +212,7 @@ const seedDemoData = async () => {
             {
                 post_id: postNaturaleza.id,
                 type: "image",
-                url: "https://picsum.photos/id/1043/1200/800",
+                url: "/images/demo/naturaleza-serrana.webp",
                 license: "standard",
                 watermark_text: "TOMAS",
                 created_at: "2026-05-23 08:30:00"

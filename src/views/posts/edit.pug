@@ -10,7 +10,7 @@ block content
       if error
         .alert= error
 
-      form.form-grid(action=`/posts/${post.id}/edit` method="POST")
+      form.form-grid(action=`/posts/${post.id}/edit` method="POST" enctype="multipart/form-data")
         .form-field
           label(for="title") Título
           input#title.form-input(type="text" name="title" required value=values.title)
@@ -20,8 +20,12 @@ block content
           textarea#description.form-textarea(name="description")= values.description
 
         .form-field
-          label(for="media_url") URL de imagen
-          input#media_url.form-input(type="url" name="media_url" value=values.media_url)
+          label(for="media_file") Reemplazar imagen desde archivo
+          input#media_file.form-input(type="file" name="media_file" accept="image/jpeg,image/png,image/webp")
+
+        .form-field
+          label(for="media_url") URL manual de imagen
+          input#media_url.form-input(type="url" name="media_url" value=values.media_url placeholder="Podés mantener la actual o reemplazarla")
 
         .form-field
           label(for="license_option") Licencia

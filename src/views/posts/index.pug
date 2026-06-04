@@ -72,7 +72,9 @@ block content
           - const displayTags = getVisibleTags(post.tags)
           - const ratingCount = post.ratings && post.ratings.length ? post.ratings.length : 0
           - const ratingAverage = getRatingAverage(post.ratings)
-          article.feed-card
+          - const postComments = post.comments || []
+          - const latestComments = postComments.slice(0, 2)
+          article.feed-card(id=`post-${post.id}`)
             .feed-card__media
               if post.canShowPrimaryMedia && post.primaryMedia && post.primaryMedia.type === "image"
                 img(src=post.primaryMedia.url alt=displayTitle)
@@ -98,6 +100,28 @@ block content
                 span= post.comments_enabled ? "Comentarios abiertos" : "Comentarios cerrados"
               if displayDescription
                 p.text-muted= displayDescription
+              .feed-meta
+                span(data-comment-count data-empty-label="Sin comentarios todavia" data-singular-label="1 comentario" data-plural-label="comentarios")= postComments.length ? `${postComments.length} comentarios` : "Sin comentarios todavia"
+              if latestComments.length
+                .comment-list.comment-list--feed(data-comment-list)
+                  each comment in latestComments
+                    article.comment-item.comment-item--feed(data-comment-item)
+                      strong= comment.user ? comment.user.username : "Usuario"
+                      p.text-muted= comment.content
+                      if sessionUser && (sessionUser.id === comment.user_id || sessionUser.id === post.user_id)
+                        form.comment-item__actions(action=`/posts/${post.id}/comments/${comment.id}/delete` method="POST" data-comment-delete-form)
+                          input(type="hidden" name="redirect_to" value=`/posts#post-${post.id}`)
+                          button.button.button--ghost.button--small(type="submit") Eliminar comentario
+              else
+                p.text-muted(data-comment-empty-state) Todavia no hay conversacion en esta publicacion.
+              if sessionUser && post.comments_enabled
+                form.form-grid.form-grid--compact(action=`/posts/${post.id}/comments` method="POST")
+                  input(type="hidden" name="redirect_to" value=`/posts#post-${post.id}`)
+                  .form-field
+                    label.sr-only(for=`comment-${post.id}`) Comentario rápido
+                    textarea.form-textarea.form-textarea--compact(id=`comment-${post.id}` name="content" rows="2" placeholder="Sumate a la conversación")
+                  .inline-actions
+                    button.button.button--soft.button--small(type="submit") Comentar
               if displayTags.length
                 .badge-row
                   each tag in displayTags
