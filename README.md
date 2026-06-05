@@ -1,8 +1,8 @@
 # FOTAZA2
 
-FOTAZA2 es una aplicación web comunitaria para publicar imágenes, navegar perfiles, guardar intereses, organizar colecciones e interactuar con otras publicaciones mediante comentarios, valoraciones, denuncias y seguimiento.
+FOTAZA2 es una aplicacion web comunitaria para publicar imagenes, navegar perfiles, guardar intereses, organizar colecciones e interactuar con otras publicaciones mediante comentarios, valoraciones, denuncias y seguimiento.
 
-El proyecto está desarrollado con Express, Sequelize, PostgreSQL y PUG siguiendo una estructura MVC.
+El proyecto esta desarrollado con Express, Sequelize, PostgreSQL y PUG siguiendo una estructura MVC.
 
 ## Stack
 
@@ -22,7 +22,7 @@ El proyecto está desarrollado con Express, Sequelize, PostgreSQL y PUG siguiend
 - PostgreSQL 14 o superior
 - una base de datos PostgreSQL creada previamente
 
-## Instalación local
+## Instalacion local
 
 1. Clonar el repositorio.
 2. Ejecutar `npm install`.
@@ -38,13 +38,18 @@ Servidor local por defecto:
 ## Variables de entorno
 
 ```env
+NODE_ENV=development
 PORT=3000
+DATABASE_URL=
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=fotaza_db
 DB_USER=postgres
 DB_PASSWORD=your_password_here
 SESSION_SECRET=your_session_secret_here
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+SUPABASE_STORAGE_BUCKET=fotaza-media
 ```
 
 ## Base de datos
@@ -56,28 +61,54 @@ El proyecto usa PostgreSQL con Sequelize, pero la estructura principal se inicia
 1. valida variables de entorno;
 2. elimina y recrea el esquema `public`;
 3. ejecuta `database/fotaza_schema.sql`;
-4. ejecuta `database/fotaza_seed.sql`.
+4. carga datos demo mediante Sequelize.
 
 Importante:
 
 - `npm run db:init` reinicia la base completa.
-- no se usa `sequelize.sync()`;
-- no hay migraciones automáticas en este proyecto.
+- no se usa `sequelize.sync()`.
+- no hay migraciones automaticas en este proyecto.
+- si `DATABASE_URL` existe, los scripts usan esa conexion en lugar de `DB_HOST`/`DB_PORT`.
 
 Para verificar modelos y asociaciones:
 
 - `npm run db:models`
+
+## Produccion en Vercel
+
+Para produccion, la app puede leer una URL completa de PostgreSQL desde `process.env.DATABASE_URL`.
+
+Configuracion minima esperada:
+
+```env
+DATABASE_URL=valor_de_POSTGRES_URL
+NODE_ENV=production
+SESSION_SECRET=your_session_secret_here
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+SUPABASE_STORAGE_BUCKET=fotaza-media
+```
+
+Si trabajas en desarrollo local con variables separadas, podes seguir usando:
+
+```env
+DB_HOST=
+DB_PORT=5432
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
+```
 
 ## Scripts disponibles
 
 - `npm start`: inicia el servidor Express.
 - `npm run db:init`: reinicializa base y carga datos semilla.
 - `npm run db:models`: valida modelos Sequelize y asociaciones.
-- `npm run db:sample-post`: crea una publicación de ejemplo.
+- `npm run db:sample-post`: crea una publicacion de ejemplo.
 
 ## Usuarios de prueba
 
-| Rol | Usuario | Correo | Contraseña |
+| Rol | Usuario | Correo | Contrasena |
 | --- | --- | --- | --- |
 | regular | `ana_fotaza` | `ana.fotaza@example.com` | `fotaza123` |
 | validator | `validador_fotaza` | `validador.fotaza@example.com` | `validator123` |
@@ -86,9 +117,9 @@ Para verificar modelos y asociaciones:
 ## Funcionalidades principales
 
 - registro, login y logout
-- perfil de usuario y edición de perfil
-- publicaciones con imagen, licencia y marca de agua mínima
-- edición y eliminación de publicaciones
+- perfil de usuario y edicion de perfil
+- publicaciones con imagen, licencia y marca de agua minima
+- edicion y eliminacion de publicaciones
 - comentarios
 - valoraciones
 - denuncias
@@ -97,12 +128,12 @@ Para verificar modelos y asociaciones:
 - intereses
 - colecciones
 - notificaciones
-- moderación básica para usuario `validator`
-- visibilidad restringida de media para usuarios anónimos según licencia
+- moderacion basica para usuario `validator`
+- visibilidad restringida de media para usuarios anonimos segun licencia
 
 ## Rutas principales
 
-Vistas públicas:
+Vistas publicas:
 
 - `/`
 - `/health`
@@ -112,7 +143,7 @@ Vistas públicas:
 - `/posts/:id`
 - `/search`
 
-Vistas con sesión:
+Vistas con sesion:
 
 - `/posts/create`
 - `/posts/:id/edit`
@@ -125,7 +156,7 @@ Vistas con sesión:
 - `/notifications`
 - `/posts/following`
 
-Moderación:
+Moderacion:
 
 - `/validator`
 
@@ -155,5 +186,5 @@ public/
 ## Observaciones
 
 - El renderizado es del lado del servidor con PUG.
-- La media usa una sola imagen principal por publicación.
-- Las licencias y la visibilidad anónima se resuelven con los campos existentes de `media`.
+- La media usa una sola imagen principal por publicacion.
+- Las licencias y la visibilidad anonima se resuelven con los campos existentes de `media`.

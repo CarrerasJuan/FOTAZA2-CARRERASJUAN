@@ -3,22 +3,28 @@ const pg = require("pg");
 
 require("dotenv").config({ quiet: true });
 
-const shouldUseSsl = process.env.DB_SSL !== "false";
+const DEFAULT_DB_PORT = 5432;
+const isDatabaseUrlConfigured = Boolean(process.env.DATABASE_URL);
+
+const createSslConfig = () => ({
+    require: true,
+    rejectUnauthorized: false
+});
+
+const shouldUseSsl = isDatabaseUrlConfigured || process.env.DB_SSL === "true";
 const commonOptions = {
     dialect: "postgres",
-    dialectModule: pg
+    dialectModule: pg,
+    logging: false
 };
 
 if (shouldUseSsl) {
     commonOptions.dialectOptions = {
-        ssl: {
-            require: true,
-            rejectUnauthorized: false
-        }
+        ssl: createSslConfig()
     };
 }
 
-const sequelize = process.env.DATABASE_URL
+const sequelize = isDatabaseUrlConfigured
     ? new Sequelize(process.env.DATABASE_URL, commonOptions)
     : new Sequelize(
         process.env.DB_NAME,
@@ -27,9 +33,27 @@ const sequelize = process.env.DATABASE_URL
         {
             ...commonOptions,
             host: process.env.DB_HOST,
-            port: process.env.DB_PORT
+            port: Number.parseInt(process.env.DB_PORT, 10) || DEFAULT_DB_PORT
         }
     );
+
+const createPgConnectionConfig = () => {
+    if (isDatabaseUrlConfigured) {
+        return {
+            connectionString: process.env.DATABASE_URL,
+            ssl: shouldUseSsl ? createSslConfig() : undefined
+        };
+    }
+
+    return {
+        host: process.env.DB_HOST,
+        port: Number.parseInt(process.env.DB_PORT, 10) || DEFAULT_DB_PORT,
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        ssl: process.env.DB_SSL === "true" ? createSslConfig() : undefined
+    };
+};
 
 const testDatabaseConnection = async () => {
     try {
@@ -42,6 +66,7 @@ const testDatabaseConnection = async () => {
 };
 
 module.exports = {
+    createPgConnectionConfig,
     sequelize,
     testDatabaseConnection
 };

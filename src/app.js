@@ -10,7 +10,7 @@ const collectionRoutes = require("./routes/collectionRoutes");
 const validatorRoutes = require("./routes/validatorRoutes");
 const interestRoutes = require("./routes/interestRoutes");
 const { notFoundHandler, errorHandler } = require("./middlewares/handleErrors");
-const { Post, User, Media, Tag } = require("./models");
+const { sequelize, Post, User, Media, Tag } = require("./models");
 const { applyMediaVisibilityToPosts } = require("./utils/mediaVisibility");
 
 const app = express();
@@ -117,10 +117,20 @@ app.get("/", async (req, res, next) => {
     }
 });
 
-app.get("/health", (req, res) => {
-    res.status(200).json({
-        status: "ok"
-    });
+app.get("/health", async (req, res) => {
+    try {
+        await sequelize.authenticate();
+
+        res.status(200).json({
+            status: "ok",
+            database: "connected"
+        });
+    } catch (error) {
+        res.status(503).json({
+            status: "degraded",
+            database: "unavailable"
+        });
+    }
 });
 
 app.use("/auth", authRoutes);

@@ -3,20 +3,24 @@ require("dotenv").config({ override: true, quiet: true });
 const fs = require("fs/promises");
 const path = require("path");
 const { Client } = require("pg");
+const { createPgConnectionConfig } = require("../config/database");
 const { sequelize } = require("../models");
 const { seedDemoData } = require("./seedDemoData");
 
 const schemaPath = path.resolve(__dirname, "..", "..", "database", "fotaza_schema.sql");
 
-const requiredEnvironmentVariables = [
-    "DB_HOST",
-    "DB_PORT",
-    "DB_NAME",
-    "DB_USER",
-    "DB_PASSWORD"
-];
-
 const ensureEnvironment = () => {
+    if (process.env.DATABASE_URL) {
+        return;
+    }
+
+    const requiredEnvironmentVariables = [
+        "DB_HOST",
+        "DB_PORT",
+        "DB_NAME",
+        "DB_USER",
+        "DB_PASSWORD"
+    ];
     const missingVariables = requiredEnvironmentVariables.filter((variableName) => !process.env[variableName]);
 
     if (missingVariables.length) {
@@ -29,13 +33,7 @@ const readSqlFile = async (filePath) => {
 };
 
 const createClient = () => {
-    return new Client({
-        host: process.env.DB_HOST,
-        port: Number.parseInt(process.env.DB_PORT, 10),
-        database: process.env.DB_NAME,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD
-    });
+    return new Client(createPgConnectionConfig());
 };
 
 const resetPublicSchema = async (client) => {
