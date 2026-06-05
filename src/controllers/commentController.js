@@ -102,7 +102,7 @@ const remove = async (req, res, next) => {
 
         if (!postId || !Number.isInteger(commentId) || commentId <= 0) {
             return res.status(404).render("posts/show", {
-                title: "PublicaciÃ³n no encontrada",
+                title: "Publicación no encontrada",
                 post: null
             });
         }
@@ -111,7 +111,7 @@ const remove = async (req, res, next) => {
 
         if (!post) {
             return res.status(404).render("posts/show", {
-                title: "PublicaciÃ³n no encontrada",
+                title: "Publicación no encontrada",
                 post: null
             });
         }
