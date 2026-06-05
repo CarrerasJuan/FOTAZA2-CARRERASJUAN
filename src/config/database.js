@@ -5,6 +5,24 @@ require("dotenv").config({ quiet: true });
 
 const DEFAULT_DB_PORT = 5432;
 const isDatabaseUrlConfigured = Boolean(process.env.DATABASE_URL);
+const normalizedDatabaseUrl = (() => {
+    if (!isDatabaseUrlConfigured) {
+        return null;
+    }
+
+    const databaseUrl = new URL(process.env.DATABASE_URL);
+
+    [
+        "sslmode",
+        "sslcert",
+        "sslkey",
+        "sslrootcert"
+    ].forEach((parameterName) => {
+        databaseUrl.searchParams.delete(parameterName);
+    });
+
+    return databaseUrl.toString();
+})();
 
 const createSslConfig = () => ({
     require: true,
@@ -25,7 +43,7 @@ if (shouldUseSsl) {
 }
 
 const sequelize = isDatabaseUrlConfigured
-    ? new Sequelize(process.env.DATABASE_URL, commonOptions)
+    ? new Sequelize(normalizedDatabaseUrl, commonOptions)
     : new Sequelize(
         process.env.DB_NAME,
         process.env.DB_USER,
@@ -40,7 +58,7 @@ const sequelize = isDatabaseUrlConfigured
 const createPgConnectionConfig = () => {
     if (isDatabaseUrlConfigured) {
         return {
-            connectionString: process.env.DATABASE_URL,
+            connectionString: normalizedDatabaseUrl,
             ssl: shouldUseSsl ? createSslConfig() : undefined
         };
     }
