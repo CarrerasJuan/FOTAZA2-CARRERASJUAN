@@ -1,10 +1,12 @@
 const { Sequelize } = require("sequelize");
+const pg = require("pg");
 
 require("dotenv").config({ quiet: true });
 
 const shouldUseSsl = process.env.DB_SSL !== "false";
 const commonOptions = {
-    dialect: "postgres"
+    dialect: "postgres",
+    dialectModule: pg
 };
 
 if (shouldUseSsl) {
