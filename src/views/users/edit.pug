@@ -10,7 +10,7 @@ block content
       if error
         .alert= error
 
-      form.form-grid(action=`/users/${profileUser.id}/edit` method="POST")
+      form.form-grid(action=`/users/${profileUser.id}/edit` method="POST" enctype="multipart/form-data")
         .form-field
           label(for="username") Usuario
           input#username.form-input(type="text" name="username" required maxlength="50" value=values.username)
@@ -24,8 +24,13 @@ block content
           textarea#biography.form-textarea(name="biography")= values.biography
 
         .form-field
+          label(for="avatar_file") Avatar desde archivo
+          input#avatar_file.form-input(type="file" name="avatar_file" accept="image/jpeg,image/png,image/webp")
+          small.form-hint O subí una URL:
+
+        .form-field
           label(for="avatar_url") URL de avatar
-          input#avatar_url.form-input(type="url" name="avatar_url" maxlength="255" value=values.avatar_url)
+          input#avatar_url.form-input(type="url" name="avatar_url" maxlength="255" value=values.avatar_url placeholder="Opcional si subiste un archivo")
 
         .inline-actions
           button.button.button--dark(type="submit") Guardar cambios

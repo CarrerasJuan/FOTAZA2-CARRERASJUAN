@@ -5,6 +5,7 @@ CREATE TABLE "users" (
   "password" varchar(255) NOT NULL,
   "biography" text,
   "avatar_url" varchar(255),
+  "avatar_storage_path" varchar(255),
   "role" varchar(20) NOT NULL DEFAULT 'regular',
   "status" varchar(20) NOT NULL DEFAULT 'active',
   "created_at" timestamp NOT NULL,

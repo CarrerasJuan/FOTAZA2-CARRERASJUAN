@@ -1,8 +1,24 @@
 const { User, Post, Media, Follow } = require("../models");
+const {
+    isSupabaseStorageConfigured,
+    uploadAvatar,
+    removeAvatar
+} = require("../services/mediaStorageService");
 
 const parseUserId = (value) => {
     const parsedId = Number.parseInt(value, 10);
     return Number.isInteger(parsedId) && parsedId > 0 ? parsedId : null;
+};
+
+const renderEditForm = (res, error, values) => {
+    return res.status(400).render("users/edit", {
+        title: "Editar perfil",
+        error,
+        profileUser: {
+            id: res.req.params.id
+        },
+        values
+    });
 };
 
 const show = async (req, res, next) => {
@@ -128,6 +144,7 @@ const update = async (req, res, next) => {
     const email = req.body.email ? req.body.email.trim() : "";
     const biography = req.body.biography ? req.body.biography.trim() : "";
     const avatar_url = req.body.avatar_url ? req.body.avatar_url.trim() : "";
+    let uploadedAvatar = null;
 
     try {
         const userId = parseUserId(req.params.id);
@@ -139,8 +156,17 @@ const update = async (req, res, next) => {
             });
         }
 
+        if (req.fileUploadErrorMessage) {
+            return renderEditForm(res, req.fileUploadErrorMessage, {
+                username,
+                email,
+                biography,
+                avatar_url
+            });
+        }
+
         const profileUser = await User.findByPk(userId, {
-            attributes: ["id", "username", "email", "biography", "avatar_url"]
+            attributes: ["id", "username", "email", "biography", "avatar_url", "avatar_storage_path"]
         });
 
         if (!profileUser) {
@@ -156,15 +182,54 @@ const update = async (req, res, next) => {
             });
         }
 
+        let finalAvatarUrl = avatar_url || null;
+        let finalStoragePath = null;
+
+        if (req.file) {
+            if (!isSupabaseStorageConfigured()) {
+                return renderEditForm(res, "La subida de avatar requiere configurar Supabase Storage en el servidor.", {
+                    username,
+                    email,
+                    biography,
+                    avatar_url
+                });
+            }
+
+            uploadedAvatar = await uploadAvatar({
+                file: req.file,
+                userId: profileUser.id
+            });
+
+            finalAvatarUrl = uploadedAvatar.publicUrl;
+            finalStoragePath = uploadedAvatar.storagePath;
+        }
+
         await profileUser.update({
             username,
             email,
             biography: biography || null,
-            avatar_url: avatar_url || null
+            avatar_url: finalAvatarUrl,
+            avatar_storage_path: finalStoragePath
         });
+
+        if (uploadedAvatar && profileUser.avatar_storage_path) {
+            try {
+                await removeAvatar(profileUser.avatar_storage_path);
+            } catch (cleanupError) {
+                console.error("No se pudo eliminar el avatar anterior:", cleanupError.message);
+            }
+        }
 
         return res.redirect(`/users/${profileUser.id}`);
     } catch (error) {
+        if (uploadedAvatar && uploadedAvatar.storagePath) {
+            try {
+                await removeAvatar(uploadedAvatar.storagePath);
+            } catch (cleanupError) {
+                console.error("No se pudo limpiar avatar fallido:", cleanupError.message);
+            }
+        }
+
         if (error.name === "SequelizeUniqueConstraintError") {
             return res.status(400).render("users/edit", {
                 title: "Editar perfil",
@@ -178,6 +243,18 @@ const update = async (req, res, next) => {
                     biography,
                     avatar_url
                 }
+            });
+        }
+
+        if (
+            error.message === "La subida de avatar requiere configurar Supabase Storage en el servidor."
+            || error.message === "No se pudo subir el avatar a Supabase Storage."
+        ) {
+            return renderEditForm(res, error.message, {
+                username,
+                email,
+                biography,
+                avatar_url
             });
         }
 

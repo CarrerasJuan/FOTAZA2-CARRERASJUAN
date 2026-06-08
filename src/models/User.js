@@ -18,7 +18,10 @@ const initializeUser = (sequelize) => {
             username: {
                 type: DataTypes.STRING(50),
                 allowNull: false,
-                unique: true
+                unique: true,
+                validate: {
+                    is: /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]+$/
+                }
             },
             email: {
                 type: DataTypes.STRING(100),
@@ -34,6 +37,10 @@ const initializeUser = (sequelize) => {
                 allowNull: true
             },
             avatar_url: {
+                type: DataTypes.STRING(255),
+                allowNull: true
+            },
+            avatar_storage_path: {
                 type: DataTypes.STRING(255),
                 allowNull: true
             },
