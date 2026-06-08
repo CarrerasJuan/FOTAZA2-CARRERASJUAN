@@ -44,14 +44,18 @@ const uploadFile = async ({ file, userId, folder }) => {
 
     const bucketName = process.env.SUPABASE_STORAGE_BUCKET;
     const storagePath = `${folder}/${userId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
-    const { error: uploadError } = await client.storage.from(bucketName).upload(storagePath, file.buffer, {
+    const { data: uploadData, error: uploadError } = await client.storage.from(bucketName).upload(storagePath, file.buffer, {
         contentType: file.mimetype,
         cacheControl: "3600",
         upsert: false
     });
 
     if (uploadError) {
-        throw new Error(`No se pudo subir el archivo a Supabase Storage.`);
+        throw new Error(`No se pudo subir el archivo a Supabase Storage: ${uploadError.message}`);
+    }
+
+    if (!uploadData) {
+        throw new Error("Supabase devolvio exito sin datos.");
     }
 
     const { data } = client.storage.from(bucketName).getPublicUrl(storagePath);

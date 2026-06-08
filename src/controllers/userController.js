@@ -259,7 +259,7 @@ const update = async (req, res, next) => {
 
         if (
             error.message === "La subida de avatar requiere configurar Supabase Storage en el servidor."
-            || error.message === "No se pudo subir el archivo a Supabase Storage."
+            || error.message.startsWith("No se pudo subir el archivo a Supabase Storage")
         ) {
             return renderEditForm(res, error.message, {
                 username,
