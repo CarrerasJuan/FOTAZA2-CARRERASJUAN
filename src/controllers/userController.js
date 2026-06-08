@@ -186,6 +186,13 @@ const update = async (req, res, next) => {
         let finalStoragePath = null;
 
         if (req.file) {
+            return res.json({
+                debug: "req.file existe",
+                fileName: req.file.originalname,
+                mimeType: req.file.mimetype,
+                size: req.file.size
+            });
+
             if (!isSupabaseStorageConfigured()) {
                 return renderEditForm(res, "La subida de avatar requiere configurar Supabase Storage en el servidor.", {
                     username,
