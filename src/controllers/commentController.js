@@ -31,7 +31,7 @@ const wantsJson = (req) => {
 };
 
 const create = async (req, res, next) => {
-    const content = req.body.content ? req.body.content.trim() : "";
+    const content = req.body.content ? req.body.content.trim().replace(/<[^>]*>/g, "") : "";
 
     try {
         const postId = parsePostId(req.params.id);

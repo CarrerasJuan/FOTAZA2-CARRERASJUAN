@@ -200,7 +200,7 @@ block content
             each comment in post.comments
               article.comment-item(data-comment-item)
                 strong= comment.user ? comment.user.username : "Usuario"
-                p.text-muted= comment.content
+                p.text-muted= comment.content ? String(comment.content).replace(/<[^>]*>/g, '') : ''
                 if sessionUser && (sessionUser.id === comment.user_id || sessionUser.id === post.user_id)
                   form.comment-item__actions(action=`/posts/${post.id}/comments/${comment.id}/delete` method="POST" data-comment-delete-form)
                     input(type="hidden" name="redirect_to" value=`/posts/${post.id}`)
