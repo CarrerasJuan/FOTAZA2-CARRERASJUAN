@@ -35,33 +35,38 @@ const getSupabaseClient = () => {
 };
 
 const uploadFile = async ({ file, userId, folder }) => {
-    const client = getSupabaseClient();
     const extension = imageExtensionsByMimeType[file.mimetype];
 
     if (!extension) {
         throw new Error("El tipo de archivo de imagen no es compatible.");
     }
 
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const bucketName = process.env.SUPABASE_STORAGE_BUCKET;
     const storagePath = `${folder}/${userId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
-    const { data: uploadData, error: uploadError } = await client.storage.from(bucketName).upload(storagePath, file.buffer, {
-        contentType: file.mimetype,
-        cacheControl: "3600",
-        upsert: false
-    });
 
-    if (uploadError) {
-        throw new Error(`No se pudo subir el archivo a Supabase Storage: ${uploadError.message}`);
+    const response = await fetch(
+        `${supabaseUrl}/storage/v1/object/${bucketName}/${storagePath}`,
+        {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${serviceRoleKey}`,
+                "Content-Type": file.mimetype
+            },
+            body: file.buffer
+        }
+    );
+
+    if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`Supabase Storage error (${response.status}): ${errorBody}`);
     }
 
-    if (!uploadData) {
-        throw new Error("Supabase devolvio exito sin datos.");
-    }
-
-    const { data } = client.storage.from(bucketName).getPublicUrl(storagePath);
+    const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucketName}/${storagePath}`;
 
     return {
-        publicUrl: data.publicUrl,
+        publicUrl,
         storagePath
     };
 };
