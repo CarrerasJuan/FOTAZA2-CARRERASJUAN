@@ -202,6 +202,9 @@ const update = async (req, res, next) => {
 
             finalAvatarUrl = uploadedAvatar.publicUrl;
             finalStoragePath = uploadedAvatar.storagePath;
+        } else if (!avatar_url) {
+            finalAvatarUrl = profileUser.avatar_url;
+            finalStoragePath = profileUser.avatar_storage_path;
         }
 
         await profileUser.update({
