@@ -46,16 +46,19 @@ const uploadFile = async ({ file, userId, folder }) => {
     const bucketName = process.env.SUPABASE_STORAGE_BUCKET;
     const storagePath = `${folder}/${userId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
 
+    const formData = new FormData();
+    const blob = new Blob([file.buffer], { type: file.mimetype });
+    formData.append("file", blob, `${storagePath.split("/").pop()}`);
+
     const response = await fetch(
         `${supabaseUrl}/storage/v1/object/${bucketName}/${storagePath}`,
         {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${serviceRoleKey}`,
-                "apikey": serviceRoleKey,
-                "Content-Type": file.mimetype
+                "apikey": serviceRoleKey
             },
-            body: file.buffer
+            body: formData
         }
     );
 
