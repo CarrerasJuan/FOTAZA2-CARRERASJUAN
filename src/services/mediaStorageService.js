@@ -34,7 +34,7 @@ const getSupabaseClient = () => {
     });
 };
 
-const uploadPostImage = async ({ file, userId }) => {
+const uploadFile = async ({ file, userId, folder }) => {
     const client = getSupabaseClient();
     const extension = imageExtensionsByMimeType[file.mimetype];
 
@@ -43,7 +43,7 @@ const uploadPostImage = async ({ file, userId }) => {
     }
 
     const bucketName = process.env.SUPABASE_STORAGE_BUCKET;
-    const storagePath = `posts/${userId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
+    const storagePath = `${folder}/${userId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
     const { error: uploadError } = await client.storage.from(bucketName).upload(storagePath, file.buffer, {
         contentType: file.mimetype,
         cacheControl: "3600",
@@ -51,7 +51,7 @@ const uploadPostImage = async ({ file, userId }) => {
     });
 
     if (uploadError) {
-        throw new Error("No se pudo subir la imagen a Supabase Storage.");
+        throw new Error(`No se pudo subir el archivo a Supabase Storage.`);
     }
 
     const { data } = client.storage.from(bucketName).getPublicUrl(storagePath);
@@ -60,6 +60,10 @@ const uploadPostImage = async ({ file, userId }) => {
         publicUrl: data.publicUrl,
         storagePath
     };
+};
+
+const uploadPostImage = async ({ file, userId }) => {
+    return uploadFile({ file, userId, folder: "posts" });
 };
 
 const removePostImage = async (storagePath) => {
@@ -77,35 +81,11 @@ const removePostImage = async (storagePath) => {
 };
 
 const uploadAvatar = async ({ file, userId }) => {
-    const client = getSupabaseClient();
-    const bucketName = process.env.SUPABASE_STORAGE_BUCKET;
-    const extension = imageExtensionsByMimeType[file.mimetype];
-
     if (!file || !file.buffer) {
         throw new Error("No se proporcionó un archivo de avatar válido.");
     }
 
-    if (!extension) {
-        throw new Error("El tipo de archivo de avatar no es compatible.");
-    }
-
-    const storagePath = `avatars/${userId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
-    const { error: uploadError } = await client.storage.from(bucketName).upload(storagePath, file.buffer, {
-        contentType: file.mimetype,
-        cacheControl: "3600",
-        upsert: false
-    });
-
-    if (uploadError) {
-        throw new Error("No se pudo subir el avatar a Supabase Storage.");
-    }
-
-    const { data } = client.storage.from(bucketName).getPublicUrl(storagePath);
-
-    return {
-        publicUrl: data.publicUrl,
-        storagePath
-    };
+    return uploadFile({ file, userId, folder: "avatars" });
 };
 
 const removeAvatar = async (storagePath) => {
