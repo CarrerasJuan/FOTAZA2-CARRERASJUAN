@@ -85,7 +85,7 @@ const uploadAvatar = async ({ file, userId }) => {
         throw new Error("No se proporcionó un archivo de avatar válido.");
     }
 
-    return uploadFile({ file, userId, folder: "avatars" });
+    return uploadFile({ file, userId, folder: "posts" });
 };
 
 const removeAvatar = async (storagePath) => {
