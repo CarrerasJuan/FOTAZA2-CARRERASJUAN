@@ -35,5 +35,6 @@ const uploadPostImage = (req, res, next) => {
 
 module.exports = {
     uploadPostImage,
+    upload,
     MAX_POST_IMAGE_SIZE_BYTES
 };
