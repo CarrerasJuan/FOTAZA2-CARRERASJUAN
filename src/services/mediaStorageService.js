@@ -1,5 +1,4 @@
 const crypto = require("crypto");
-const sharp = require("sharp");
 const { createClient } = require("@supabase/supabase-js");
 
 const requiredEnvironmentVariables = [
@@ -80,22 +79,19 @@ const removePostImage = async (storagePath) => {
 const uploadAvatar = async ({ file, userId }) => {
     const client = getSupabaseClient();
     const bucketName = process.env.SUPABASE_STORAGE_BUCKET;
+    const extension = imageExtensionsByMimeType[file.mimetype];
 
     if (!file || !file.buffer) {
         throw new Error("No se proporcionó un archivo de avatar válido.");
     }
 
-    const resizedBuffer = await sharp(file.buffer)
-        .resize(400, 400, {
-            fit: "cover",
-            position: "center"
-        })
-        .webp({ quality: 80 })
-        .toBuffer();
+    if (!extension) {
+        throw new Error("El tipo de archivo de avatar no es compatible.");
+    }
 
-    const storagePath = `avatars/${userId}/${Date.now()}-${crypto.randomUUID()}.webp`;
-    const { error: uploadError } = await client.storage.from(bucketName).upload(storagePath, resizedBuffer, {
-        contentType: "image/webp",
+    const storagePath = `avatars/${userId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
+    const { error: uploadError } = await client.storage.from(bucketName).upload(storagePath, file.buffer, {
+        contentType: file.mimetype,
         cacheControl: "3600",
         upsert: false
     });
