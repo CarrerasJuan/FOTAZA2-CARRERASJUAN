@@ -52,6 +52,7 @@ const uploadFile = async ({ file, userId, folder }) => {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${serviceRoleKey}`,
+                "apikey": serviceRoleKey,
                 "Content-Type": file.mimetype
             },
             body: file.buffer
