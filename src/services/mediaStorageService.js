@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const sharp = require("sharp");
 const { createClient } = require("@supabase/supabase-js");
 
 const requiredEnvironmentVariables = [
@@ -76,8 +77,59 @@ const removePostImage = async (storagePath) => {
     }
 };
 
+const uploadAvatar = async ({ file, userId }) => {
+    const client = getSupabaseClient();
+    const bucketName = process.env.SUPABASE_STORAGE_BUCKET;
+
+    if (!file || !file.buffer) {
+        throw new Error("No se proporcionó un archivo de avatar válido.");
+    }
+
+    const resizedBuffer = await sharp(file.buffer)
+        .resize(400, 400, {
+            fit: "cover",
+            position: "center"
+        })
+        .webp({ quality: 80 })
+        .toBuffer();
+
+    const storagePath = `avatars/${userId}/${Date.now()}-${crypto.randomUUID()}.webp`;
+    const { error: uploadError } = await client.storage.from(bucketName).upload(storagePath, resizedBuffer, {
+        contentType: "image/webp",
+        cacheControl: "3600",
+        upsert: false
+    });
+
+    if (uploadError) {
+        throw new Error("No se pudo subir el avatar a Supabase Storage.");
+    }
+
+    const { data } = client.storage.from(bucketName).getPublicUrl(storagePath);
+
+    return {
+        publicUrl: data.publicUrl,
+        storagePath
+    };
+};
+
+const removeAvatar = async (storagePath) => {
+    if (!storagePath || !isSupabaseStorageConfigured()) {
+        return;
+    }
+
+    const client = getSupabaseClient();
+    const bucketName = process.env.SUPABASE_STORAGE_BUCKET;
+    const { error } = await client.storage.from(bucketName).remove([storagePath]);
+
+    if (error) {
+        throw new Error("No se pudo eliminar el avatar de Supabase Storage.");
+    }
+};
+
 module.exports = {
     isSupabaseStorageConfigured,
     uploadPostImage,
-    removePostImage
+    removePostImage,
+    uploadAvatar,
+    removeAvatar
 };

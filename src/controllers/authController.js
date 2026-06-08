@@ -45,6 +45,17 @@ const register = async (req, res, next) => {
             });
         }
 
+        if (/\d/.test(username)) {
+            return res.status(400).render("auth/register", {
+                title: "Registrarse",
+                error: "El nombre de usuario no puede contener números.",
+                values: {
+                    username,
+                    email
+                }
+            });
+        }
+
         const user = await User.create({
             username,
             email,
