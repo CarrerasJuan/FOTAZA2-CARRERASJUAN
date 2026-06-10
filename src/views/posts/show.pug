@@ -164,11 +164,10 @@ block content
               else
                 p.text-muted Todavía no valoraste esta publicación.
                 form.form-grid(action=`/posts/${post.id}/ratings` method="POST")
-                  fieldset.rating-stars
-                    legend.rating-stars__legend Elegí un puntaje
-                    .rating-stars__inputs
-                      select.form-select(name="points" required)
-                      option(value="" disabled selected) Elegí un puntaje
+                  .form-field
+                    label(for="points-select") Elegí un puntaje
+                    select#points-select.form-select(name="points" required)
+                      option(value="" disabled selected) — Seleccionar —
                       option(value="5") 5 - Excelente
                       option(value="4.5") 4.5
                       option(value="4") 4 - Muy bueno
