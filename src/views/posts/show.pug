@@ -45,8 +45,14 @@ block content
     -   return license;
     - }
     - const buildStars = (value) => {
-    -   const score = Math.max(0, Math.min(5, Math.round(Number(value) || 0)));
-    -   return "★".repeat(score) + "☆".repeat(5 - score);
+    -   const score = Math.max(0, Math.min(5, Number(value) || 0));
+    -   let stars = "";
+    -   for (let i = 1; i <= 5; i++) {
+    -     if (score >= i) stars += "★";
+    -     else if (score >= i - 0.5) stars += "<span style=\"position:relative;display:inline-block;\">☆<span style=\"position:absolute;left:0;top:0;overflow:hidden;width:50%;color:gold;\">★</span></span>";
+    -     else stars += "☆";
+    -   }
+    -   return stars;
     - }
     - const primaryMedia = post.primaryMedia || (post.media && post.media.length ? post.media[0] : null)
     - const watermarkLabel = primaryMedia ? (primaryMedia.watermark_text || (primaryMedia.license === "copyright" ? "Copyright" : null)) : null
@@ -97,7 +103,8 @@ block content
                 .metric__value.metric__value--stars
                   if ratingSummary && ratingSummary.average
                     - const displayAverage = Number(ratingSummary.average) % 1 === 0 ? Number(ratingSummary.average).toFixed(0) : Number(ratingSummary.average).toFixed(1)
-                    | #{buildStars(ratingSummary.average)} #{displayAverage}
+                    - const avgValue = Number(ratingSummary.average)
+                    | !{buildStars(avgValue)} #{displayAverage}
                   else
                     | Sin valoraciones todavía
               .metric
@@ -152,7 +159,7 @@ block content
                 p.text-muted No puedes valorar tu propia publicación.
               else if ratingSummary && ratingSummary.currentUserRating
                 p.text-muted
-                  span.rating-summary__stars= buildStars(ratingSummary.currentUserRating.points)
+                  span.rating-summary__stars!= buildStars(ratingSummary.currentUserRating.points)
                   |  Ya valoraste esta publicación con #{ratingSummary.currentUserRating.points} de 5.
               else
                 p.text-muted Todavía no valoraste esta publicación.
@@ -160,16 +167,17 @@ block content
                   fieldset.rating-stars
                     legend.rating-stars__legend Elegí un puntaje
                     .rating-stars__inputs
-                      input#points-5.rating-stars__input(type="radio" name="points" value="5" required)
-                      label.rating-stars__label(for="points-5" aria-label="5 estrellas") ★
-                      input#points-4.rating-stars__input(type="radio" name="points" value="4")
-                      label.rating-stars__label(for="points-4" aria-label="4 estrellas") ★
-                      input#points-3.rating-stars__input(type="radio" name="points" value="3")
-                      label.rating-stars__label(for="points-3" aria-label="3 estrellas") ★
-                      input#points-2.rating-stars__input(type="radio" name="points" value="2")
-                      label.rating-stars__label(for="points-2" aria-label="2 estrellas") ★
-                      input#points-1.rating-stars__input(type="radio" name="points" value="1")
-                      label.rating-stars__label(for="points-1" aria-label="1 estrella") ★
+                      select.form-select(name="points" required)
+                      option(value="" disabled selected) Elegí un puntaje
+                      option(value="5") 5 - Excelente
+                      option(value="4.5") 4.5
+                      option(value="4") 4 - Muy bueno
+                      option(value="3.5") 3.5
+                      option(value="3") 3 - Bueno
+                      option(value="2.5") 2.5
+                      option(value="2") 2 - Regular
+                      option(value="1.5") 1.5
+                      option(value="1") 1 - Malo
                   button.button.button--dark(type="submit") Guardar valoración
 
             .panel

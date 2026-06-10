@@ -19,8 +19,12 @@ const initializeRating = (sequelize) => {
                 allowNull: false
             },
             points: {
-                type: DataTypes.INTEGER,
-                allowNull: false
+                type: DataTypes.DECIMAL(3,1),
+                allowNull: false,
+                validate: {
+                    min: 1,
+                    max: 5
+                }
             },
             created_at: {
                 type: DataTypes.DATE,

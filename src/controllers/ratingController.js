@@ -7,7 +7,7 @@ const parsePostId = (value) => {
 
 const ratePost = async (req, res, next) => {
     const postId = parsePostId(req.params.id);
-    const parsedPoints = Number.parseInt(req.body.points, 10);
+    const parsedPoints = Number.parseFloat(req.body.points);
 
     try {
         if (!postId) {
@@ -26,8 +26,8 @@ const ratePost = async (req, res, next) => {
             });
         }
 
-        if (!Number.isInteger(parsedPoints) || parsedPoints < 1 || parsedPoints > 5) {
-            return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("La valoración debe estar entre 1 y 5.")}`);
+        if (isNaN(parsedPoints) || parsedPoints < 1 || parsedPoints > 5 || ![1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].includes(parsedPoints)) {
+            return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("La valoración debe ser 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5 o 5.")}`);
         }
 
         if (post.user_id === req.currentUser.id) {
