@@ -108,11 +108,15 @@ DB_PASSWORD=
 
 ## Usuarios de prueba
 
+> ⚠️ Los datos demo se cargan con `npm run db:seed` y crean 4 usuarios (ana, bruno, clara, tomas).
+> Las cuentas reales abajo fueron registradas desde la app en producción.
+
 | Rol | Usuario | Correo | Contrasena |
 | --- | --- | --- | --- |
-| regular | `ana_fotaza` | `ana.fotaza@example.com` | `fotaza123` |
-| validator | `validador_fotaza` | `validador.fotaza@example.com` | `validator123` |
-| regular | `bruno_comunidad` | `bruno.comunidad@example.com` | `comunidad123` |
+| validator | Juan | `johntest@gmail.com` | `test123` |
+| regular | Leo | `leomessi@gmail.com` | `lacuartaesnuestra` |
+| regular | Angel | `angel@gmail.com` | `angeldimaria` |
+| regular | Kylian | `kylian@gmail.com` | `cebollita` |
 
 ## Funcionalidades principales
 

@@ -96,7 +96,8 @@ block content
                 .metric__label Promedio
                 .metric__value.metric__value--stars
                   if ratingSummary && ratingSummary.average
-                    | #{buildStars(ratingSummary.average)} #{ratingSummary.average}
+                    - const displayAverage = Number(ratingSummary.average) % 1 === 0 ? Number(ratingSummary.average).toFixed(0) : Number(ratingSummary.average).toFixed(1)
+                    | #{buildStars(ratingSummary.average)} #{displayAverage}
                   else
                     | Sin valoraciones todavía
               .metric

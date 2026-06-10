@@ -541,7 +541,7 @@ const show = async (req, res, next) => {
         const ratings = post.ratings || [];
         const totalRatings = ratings.length;
         const ratingAverage = totalRatings
-            ? (ratings.reduce((sum, rating) => sum + rating.points, 0) / totalRatings).toFixed(1)
+            ? (ratings.reduce((sum, rating) => sum + rating.points, 0) / totalRatings)
             : null;
         const currentUserRating = req.currentUser
             ? ratings.find((rating) => rating.user_id === req.currentUser.id) || null
