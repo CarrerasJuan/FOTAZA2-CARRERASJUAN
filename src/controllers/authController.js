@@ -29,7 +29,7 @@ const showRegister = (req, res) => {
 };
 
 const register = async (req, res, next) => {
-    const username = req.body.username ? req.body.username.trim() : "";
+    const username = req.body.username ? req.body.username.trim().replace(/\s+/g, " ") : "";
     const email = req.body.email ? req.body.email.trim() : "";
     const password = req.body.password ? req.body.password.trim() : "";
 

@@ -20,7 +20,7 @@ const initializeUser = (sequelize) => {
                 allowNull: false,
                 unique: true,
                 validate: {
-                    is: /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]+$/
+                    is: /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ ]+$/
                 }
             },
             email: {
