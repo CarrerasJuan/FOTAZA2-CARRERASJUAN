@@ -8,7 +8,8 @@
     "db:init": "node src/scripts/dbInit.js",
     "db:seed": "node src/scripts/seedDemoData.js",
     "db:models": "node src/scripts/checkModels.js",
-    "db:sample-post": "node src/scripts/createSamplePost.js"
+    "db:sample-post": "node src/scripts/createSamplePost.js",
+    "db:promote": "node src/scripts/promoteUser.js"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.107.0",
     "bcrypt": "^6.0.0",
+    "connect-pg-simple": "^10.0.0",
     "dotenv": "^17.4.2",
     "express": "^4.21.2",
     "express-session": "^1.19.0",

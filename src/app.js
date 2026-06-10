@@ -1,5 +1,7 @@
 const express = require("express");
 const session = require("express-session");
+const PgSession = require("connect-pg-simple")(session);
+const { Pool } = require("pg");
 const path = require("path");
 const authRoutes = require("./routes/authRoutes");
 const postRoutes = require("./routes/postRoutes");
@@ -21,12 +23,27 @@ app.set("views", path.join(__dirname, "views"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+const sessionPool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+});
+
 app.use(
     session({
+        store: new PgSession({
+            pool: sessionPool,
+            tableName: "session",
+            createTableIfMissing: true
+        }),
         secret: process.env.SESSION_SECRET || "fotaza_session_secret",
         resave: false,
         saveUninitialized: false,
-        name: SESSION_COOKIE_NAME
+        name: SESSION_COOKIE_NAME,
+        cookie: {
+            secure: process.env.NODE_ENV === "production",
+            httpOnly: true,
+            maxAge: 24 * 60 * 60 * 1000
+        }
     })
 );
 app.use(async (req, res, next) => {
