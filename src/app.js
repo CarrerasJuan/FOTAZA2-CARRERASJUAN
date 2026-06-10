@@ -23,10 +23,32 @@ app.set("views", path.join(__dirname, "views"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const sessionPool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
-});
+const getSessionPool = () => {
+    if (process.env.DATABASE_URL) {
+        const dbUrl = new URL(process.env.DATABASE_URL);
+        return new Pool({
+            host: dbUrl.hostname,
+            port: Number.parseInt(dbUrl.port, 10) || 5432,
+            database: dbUrl.pathname.slice(1),
+            user: decodeURIComponent(dbUrl.username),
+            password: decodeURIComponent(dbUrl.password),
+            ssl: {
+                require: true,
+                rejectUnauthorized: false
+            }
+        });
+    }
+
+    return new Pool({
+        host: process.env.DB_HOST || "localhost",
+        port: Number.parseInt(process.env.DB_PORT, 10) || 5432,
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD
+    });
+};
+
+const sessionPool = getSessionPool();
 
 app.use(
     session({
