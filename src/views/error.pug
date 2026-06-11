@@ -1,0 +1,26 @@
+extends layouts/main
+
+block content
+  section.page-section
+    .panel
+      .empty-state
+        if statusCode === 404
+          h1 Página no encontrada
+          p.text-muted= message || "La página que buscás no existe o fue movida."
+        else if statusCode === 403
+          h1 Acceso denegado
+          p.text-muted= message || "No tenés permisos para acceder a esta página."
+        else if statusCode === 401
+          h1 No autenticado
+          p.text-muted= message || "Necesitás iniciar sesión para ver esta página."
+        else
+          h1 Error interno
+          p.text-muted= message || "Ocurrió un error inesperado. Intentalo de nuevo más tarde."
+
+        .inline-actions
+          a.button.button--dark(href="/") Volver al inicio
+          a.button.button--ghost(href="/posts") Ver publicaciones
+
+      if statusCode && statusCode >= 500 && statusCode < 600
+        p.text-muted(style="margin-top: 2rem; text-align: center; font-size: 0.85rem;")
+          | Código: #{statusCode}
