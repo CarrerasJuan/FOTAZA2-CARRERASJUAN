@@ -1,4 +1,4 @@
-const { Message, Interest, Post, User } = require("../models");
+const { Message, Interest, Post, User, Notification } = require("../models");
 
 const showChat = async (req, res, next) => {
     try {
@@ -96,11 +96,26 @@ const sendMessage = async (req, res, next) => {
             return res.status(400).json({ error: "El mensaje no puede estar vacío." });
         }
 
+        const now = new Date();
+
         await Message.create({
             interest_id: interest.id,
             sender_id: req.currentUser.id,
             content,
-            created_at: new Date()
+            created_at: now
+        });
+
+        // Notificar al otro participante
+        const otherUserId = req.currentUser.id === interest.user_id
+            ? interest.post.user_id
+            : interest.user_id;
+
+        await Notification.create({
+            user_id: otherUserId,
+            actor_id: req.currentUser.id,
+            type: "message",
+            is_read: false,
+            created_at: now
         });
 
         return res.redirect(`/interests/${interestId}/chat`);

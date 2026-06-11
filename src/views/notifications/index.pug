@@ -1,7 +1,7 @@
 extends ../layouts/main
 
 block content
-  - const notificationLabels = { comment: "Comentario", rating: "Valoración", follow: "Nuevo seguidor", report: "Denuncia", interest: "Interés" }
+  - const notificationLabels = { comment: "Comentario", rating: "Valoración", follow: "Nuevo seguidor", report: "Denuncia", interest: "Interés", message: "Mensaje" }
   section.page-section
     .panel
       span.section-eyebrow Actividad reciente
@@ -58,6 +58,17 @@ block content
                   if notification.notificationInterest.interest.post_id
                     a.button.button--ghost.button--small(href=`/posts/${notification.notificationInterest.interest.post_id}`) Ver publicación
                   a.button.button--soft.button--small(href=`/interests/${notification.notificationInterest.interest.id}/chat`) Responder
+
+              if notification.type === "message"
+                p.text-muted
+                  if notification.actor
+                    | #{notification.actor.username} te envió un mensaje.
+                  else
+                    | Te enviaron un mensaje.
+                .inline-actions
+                  if notification.actor
+                    a.button.button--ghost.button--small(href=`/users/${notification.actor.id}`) Ver perfil
+                  a.button.button--soft.button--small(href="/interests") Ir a intereses
 
               unless notification.is_read
                 form(action=`/notifications/${notification.id}/read` method="POST")
