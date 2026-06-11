@@ -22,5 +22,6 @@ block content
         button.button.button--dark(type="submit") Ingresar
 
       .footer-link-row
-        a.button.button--ghost(href="/auth/register") Crear cuenta
+        if registrationEnabled
+          a.button.button--ghost(href="/auth/register") Crear cuenta
         a.button.button--soft(href="/posts") Explorar publicaciones

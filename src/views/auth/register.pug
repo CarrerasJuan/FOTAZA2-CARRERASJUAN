@@ -5,26 +5,36 @@ block content
     .auth-card
       span.section-eyebrow Registro
       h1 Crear cuenta en Fotaza
-      p.section-description Completá los datos básicos para acceder al sistema y comenzar a interactuar con publicaciones y perfiles.
+      if !registrationEnabled
+        .alert.alert--restricted
+          .alert__icon 🚫
+          .alert__content
+            strong Registro restringido
+            p La creación de cuentas se encuentra restringida por el momento. Si necesitás acceso, contactá a un administrador.
+        .footer-link-row
+          a.button.button--dark(href="/auth/login") Iniciar sesión
+          a.button.button--ghost(href="/posts") Volver a publicaciones
+      else
+        p.section-description Completá los datos básicos para acceder al sistema y comenzar a interactuar con publicaciones y perfiles.
 
-      if error
-        .alert= error
+        if error
+          .alert= error
 
-      form.form-grid(action="/auth/register" method="POST")
-        .form-field
-          label(for="username") Nombre de usuario
-          input#username.form-input(type="text" name="username" required value=values.username pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]+" title="Solo letras (puede incluir espacios)")
+        form.form-grid(action="/auth/register" method="POST")
+          .form-field
+            label(for="username") Nombre de usuario
+            input#username.form-input(type="text" name="username" required value=values.username pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]+" title="Solo letras (puede incluir espacios)")
 
-        .form-field
-          label(for="email") Correo electrónico
-          input#email.form-input(type="email" name="email" required value=values.email)
+          .form-field
+            label(for="email") Correo electrónico
+            input#email.form-input(type="email" name="email" required value=values.email)
 
-        .form-field
-          label(for="password") Contraseña
-          input#password.form-input(type="password" name="password" required)
+          .form-field
+            label(for="password") Contraseña
+            input#password.form-input(type="password" name="password" required)
 
-        button.button.button--dark(type="submit") Registrarse
+          button.button.button--dark(type="submit") Registrarse
 
-      .footer-link-row
-        a.button.button--ghost(href="/auth/login") Ya tengo cuenta
-        a.button.button--soft(href="/posts") Volver a publicaciones
+        .footer-link-row
+          a.button.button--ghost(href="/auth/login") Ya tengo cuenta
+          a.button.button--soft(href="/posts") Volver a publicaciones

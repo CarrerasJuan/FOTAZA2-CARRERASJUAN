@@ -11,6 +11,7 @@ const showLogin = (req, res) => {
     return res.status(200).render("auth/login", {
         title: "Iniciar sesión",
         error: null,
+        registrationEnabled: process.env.REGISTRATION_ENABLED !== "false",
         values: {
             email: ""
         }
@@ -18,9 +19,12 @@ const showLogin = (req, res) => {
 };
 
 const showRegister = (req, res) => {
+    const registrationEnabled = process.env.REGISTRATION_ENABLED !== "false";
+
     return res.status(200).render("auth/register", {
         title: "Registrarse",
         error: null,
+        registrationEnabled,
         values: {
             username: "",
             email: ""
@@ -29,6 +33,10 @@ const showRegister = (req, res) => {
 };
 
 const register = async (req, res, next) => {
+    if (process.env.REGISTRATION_ENABLED === "false") {
+        return res.status(403).redirect("/auth/register");
+    }
+
     const username = req.body.username ? req.body.username.trim().replace(/\s+/g, " ") : "";
     const email = req.body.email ? req.body.email.trim() : "";
     const password = req.body.password ? req.body.password.trim() : "";
@@ -38,6 +46,7 @@ const register = async (req, res, next) => {
             return res.status(400).render("auth/register", {
                 title: "Registrarse",
                 error: "Debes completar usuario, correo y contraseña.",
+                registrationEnabled: true,
                 values: {
                     username,
                     email
@@ -49,6 +58,7 @@ const register = async (req, res, next) => {
             return res.status(400).render("auth/register", {
                 title: "Registrarse",
                 error: "El nombre de usuario no puede contener números.",
+                registrationEnabled: true,
                 values: {
                     username,
                     email
@@ -70,6 +80,7 @@ const register = async (req, res, next) => {
             return res.status(400).render("auth/register", {
                 title: "Registrarse",
                 error: "El usuario o el correo ya se encuentran registrados.",
+                registrationEnabled: true,
                 values: {
                     username,
                     email
@@ -90,6 +101,7 @@ const login = async (req, res, next) => {
             return res.status(400).render("auth/login", {
                 title: "Iniciar sesión",
                 error: "Debes completar correo y contraseña.",
+                registrationEnabled: process.env.REGISTRATION_ENABLED !== "false",
                 values: {
                     email
                 }
@@ -104,6 +116,7 @@ const login = async (req, res, next) => {
             return res.status(401).render("auth/login", {
                 title: "Iniciar sesión",
                 error: INVALID_CREDENTIALS_MESSAGE,
+                registrationEnabled: process.env.REGISTRATION_ENABLED !== "false",
                 values: {
                     email
                 }
@@ -114,6 +127,7 @@ const login = async (req, res, next) => {
             return res.status(403).render("auth/login", {
                 title: "Iniciar sesión",
                 error: "Tu cuenta está inactiva y no puede iniciar sesión.",
+                registrationEnabled: process.env.REGISTRATION_ENABLED !== "false",
                 values: {
                     email
                 }
@@ -126,6 +140,7 @@ const login = async (req, res, next) => {
             return res.status(401).render("auth/login", {
                 title: "Iniciar sesión",
                 error: INVALID_CREDENTIALS_MESSAGE,
+                registrationEnabled: process.env.REGISTRATION_ENABLED !== "false",
                 values: {
                     email
                 }

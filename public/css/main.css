@@ -1421,3 +1421,38 @@ select {
     border-radius: 24px;
   }
 }
+
+.alert--restricted {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid #e0cfc0;
+  background: linear-gradient(135deg, #faf6f1, #f5ede3);
+  color: #4a3f35;
+}
+
+.alert__icon {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.alert__content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.alert__content strong {
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+
+.alert__content p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #6b5e52;
+}
