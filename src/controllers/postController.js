@@ -809,7 +809,10 @@ const showEditForm = async (req, res, next) => {
             });
         }
 
-        if (post.user_id !== req.currentUser.id) {
+        const isOwner = post.user_id === req.currentUser.id;
+        const isValidator = req.currentUser.role === "validator";
+
+        if (!isOwner && !isValidator) {
             return res.status(403).json({
                 message: "No tienes permisos para editar esta publicación."
             });
@@ -817,7 +820,7 @@ const showEditForm = async (req, res, next) => {
 
         const activeReportCount = await getActiveReportCount(post.id);
 
-        if (activeReportCount > 0) {
+        if (isOwner && activeReportCount > 0) {
             return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("No puedes editar esta publicación porque tiene denuncias activas.")}`);
         }
 
@@ -1050,7 +1053,10 @@ const remove = async (req, res, next) => {
             });
         }
 
-        if (post.user_id !== req.currentUser.id) {
+        const isOwner = post.user_id === req.currentUser.id;
+        const isValidator = req.currentUser.role === "validator";
+
+        if (!isOwner && !isValidator) {
             return res.status(403).json({
                 message: "No tienes permisos para eliminar esta publicación."
             });

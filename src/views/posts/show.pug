@@ -117,15 +117,16 @@ block content
             .footer-link-row
               a.button.button--ghost(href="/posts") Volver al listado
               a.button.button--soft(href=`/search?q=${encodeURIComponent(post.title)}`) Buscar similares
-              if currentUserOwnsPost
-                if isEditBlocked
+              - const canManagePost = currentUserOwnsPost || (sessionUser && sessionUser.role === 'validator')
+              if canManagePost
+                if currentUserOwnsPost && isEditBlocked
                   span.text-muted No puedes editar esta publicación porque tiene denuncias activas.
-                else
+                else if currentUserOwnsPost
                   a.button.button--dark(href=`/posts/${post.id}/edit`) Editar
                 if !isEditBlocked
                   form(action=`/posts/${post.id}/delete` method="POST")
                     button.button.button--danger(type="submit") Eliminar
-                else
+                else if currentUserOwnsPost
                   span.text-muted No puedes eliminar esta publicación porque tiene denuncias activas.
 
       aside.detail-sidebar
@@ -215,7 +216,8 @@ block content
               article.comment-item(data-comment-item)
                 strong= comment.user ? comment.user.username : "Usuario"
                 p.text-muted= comment.content ? String(comment.content).replace(/<[^>]*>/g, '') : ''
-                if sessionUser && (sessionUser.id === comment.user_id || sessionUser.id === post.user_id)
+                - const canDeleteComment = sessionUser && (sessionUser.id === comment.user_id || sessionUser.id === post.user_id || sessionUser.role === 'validator')
+                if canDeleteComment
                   form.comment-item__actions(action=`/posts/${post.id}/comments/${comment.id}/delete` method="POST" data-comment-delete-form)
                     input(type="hidden" name="redirect_to" value=`/posts/${post.id}`)
                     button.button.button--ghost.button--small(type="submit") Eliminar comentario

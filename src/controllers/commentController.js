@@ -134,8 +134,12 @@ const remove = async (req, res, next) => {
             return res.redirect(buildRedirectPath(req, post.id));
         }
 
+        const isCommentAuthor = req.currentUser.id === comment.user_id;
+        const isPostOwner = req.currentUser.id === post.user_id;
+        const isValidator = req.currentUser.role === "validator";
+
         const canDeleteComment = req.currentUser
-            && (req.currentUser.id === comment.user_id || req.currentUser.id === post.user_id);
+            && (isCommentAuthor || isPostOwner || isValidator);
 
         if (!canDeleteComment) {
             const payload = {
