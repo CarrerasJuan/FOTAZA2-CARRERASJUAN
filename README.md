@@ -120,7 +120,7 @@ DB_PASSWORD=
 
 ## Funcionalidades principales
 
-- registro, login y logout
+- registro, login y logout ✅
 - perfil de usuario y edicion de perfil
 - publicaciones con imagen, licencia y marca de agua minima
 - edicion y eliminacion de publicaciones

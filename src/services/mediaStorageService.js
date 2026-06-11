@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const sharp = require("sharp");
 const { createClient } = require("@supabase/supabase-js");
 
 const requiredEnvironmentVariables = [
@@ -7,11 +8,7 @@ const requiredEnvironmentVariables = [
     "SUPABASE_STORAGE_BUCKET"
 ];
 
-const imageExtensionsByMimeType = {
-    "image/jpeg": "jpg",
-    "image/png": "png",
-    "image/webp": "webp"
-};
+const SUPPORTED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 const isSupabaseStorageConfigured = () => requiredEnvironmentVariables.every((variableName) => Boolean(process.env[variableName]));
 
@@ -35,11 +32,11 @@ const getSupabaseClient = () => {
 };
 
 const uploadFile = async ({ file, userId, folder }) => {
-    const extension = imageExtensionsByMimeType[file.mimetype];
-
-    if (!extension) {
-        throw new Error("El tipo de archivo de imagen no es compatible.");
+    if (!SUPPORTED_MIME_TYPES.has(file.mimetype)) {
+        throw new Error("El tipo de archivo de imagen no es compatible. Permitidos: JPG, PNG, WEBP.");
     }
+
+    const extension = file.mimetype === "image/webp" ? "webp" : (file.mimetype === "image/png" ? "png" : "jpg");
 
     const supabaseUrl = process.env.SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -98,7 +95,19 @@ const uploadAvatar = async ({ file, userId }) => {
         throw new Error("No se proporcionó un archivo de avatar válido.");
     }
 
-    return uploadFile({ file, userId, folder: "avatars" });
+    const processedBuffer = await sharp(file.buffer)
+        .resize(400, 400, { fit: "cover", position: "centre" })
+        .webp({ quality: 80 })
+        .toBuffer();
+
+    const processedFile = {
+        ...file,
+        buffer: processedBuffer,
+        mimetype: "image/webp",
+        size: processedBuffer.length
+    };
+
+    return uploadFile({ file: processedFile, userId, folder: "avatars" });
 };
 
 const removeAvatar = async (storagePath) => {

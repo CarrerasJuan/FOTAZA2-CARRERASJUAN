@@ -201,10 +201,11 @@ const update = async (req, res, next) => {
                     userId: profileUser.id
                 });
             } catch (uploadError) {
-                return res.json({
-                    debug: "Error al subir avatar",
-                    errorMessage: uploadError.message,
-                    errorStack: uploadError.stack
+                return renderEditForm(res, "No se pudo subir el avatar: " + uploadError.message, {
+                    username,
+                    email,
+                    biography,
+                    avatar_url
                 });
             }
 
