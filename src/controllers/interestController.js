@@ -1,4 +1,4 @@
-const { Interest, Post, User, Media, Notification, NotificationInterest } = require("../models");
+const { Interest, Post, User, Media, Notification, NotificationInterest, sequelize } = require("../models");
 
 const parsePostId = (value) => {
     const parsedId = Number.parseInt(value, 10);
@@ -120,12 +120,30 @@ const remove = async (req, res, next) => {
             });
         }
 
-        await Interest.destroy({
+        const interest = await Interest.findOne({
             where: {
                 user_id: req.currentUser.id,
                 post_id: postId
             }
         });
+
+        if (!interest) {
+            return res.redirect(`/posts/${postId}`);
+        }
+
+        // Buscar y eliminar notificación asociada
+        const notificationLink = await NotificationInterest.findOne({
+            where: { interest_id: interest.id }
+        });
+
+        if (notificationLink) {
+            await Notification.destroy({
+                where: { id: notificationLink.notification_id }
+            });
+            await notificationLink.destroy();
+        }
+
+        await interest.destroy();
 
         return res.redirect(`/posts/${postId}`);
     } catch (error) {
