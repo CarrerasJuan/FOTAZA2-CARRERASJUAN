@@ -1,6 +1,6 @@
 # FOTAZA2
 
-FOTAZA2 es una aplicacion web comunitaria para publicar imagenes, navegar perfiles, guardar intereses, organizar colecciones e interactuar con otras publicaciones mediante comentarios, valoraciones, denuncias y seguimiento.
+FOTAZA2 es una aplicacion web comunitaria para publicar imagenes, navegar perfiles, guardar intereses con mensaje privado, organizar colecciones e interactuar con otras publicaciones mediante comentarios, valoraciones, denuncias, seguimiento y chat entre usuarios.
 
 El proyecto esta desarrollado con Express, Sequelize, PostgreSQL y PUG siguiendo una estructura MVC.
 
@@ -129,9 +129,10 @@ DB_PASSWORD=
 - denuncias
 - tags
 - seguimiento entre usuarios
-- intereses
+- intereses con mensaje privado y chat entre interesado y autor
 - colecciones
-- notificaciones
+- notificaciones con badge de no leídas
+- mensajería privada entre usuarios por cada interés
 - moderacion basica para usuario `validator`
 - visibilidad restringida de media para usuarios anonimos segun licencia
 
