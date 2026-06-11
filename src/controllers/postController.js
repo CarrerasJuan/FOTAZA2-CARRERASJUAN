@@ -1027,7 +1027,21 @@ const remove = async (req, res, next) => {
             });
         }
 
-        const post = await Post.findByPk(postId);
+        const post = await Post.findByPk(postId, {
+            include: [
+                {
+                    model: Report,
+                    as: "reports",
+                    attributes: ["id", "status"],
+                    where: {
+                        status: {
+                            [Op.in]: ACTIVE_REPORT_STATUSES
+                        }
+                    },
+                    required: false
+                }
+            ]
+        });
 
         if (!post) {
             return res.status(404).render("posts/show", {
@@ -1040,6 +1054,20 @@ const remove = async (req, res, next) => {
             return res.status(403).json({
                 message: "No tienes permisos para eliminar esta publicación."
             });
+        }
+
+        const hasActiveReports = post.reports && post.reports.some(
+            (report) => ACTIVE_REPORT_STATUSES.includes(report.status)
+        );
+
+        if (hasActiveReports) {
+            const errorMessage = "No puedes eliminar esta publicación porque tiene denuncias activas.";
+
+            if (req.headers["x-requested-with"] === "XMLHttpRequest") {
+                return res.status(403).json({ message: errorMessage });
+            }
+
+            return res.redirect(`/posts/${postId}?error=${encodeURIComponent(errorMessage)}`);
         }
 
         await deletePostDependencies(post.id);

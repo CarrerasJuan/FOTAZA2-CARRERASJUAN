@@ -122,8 +122,11 @@ block content
                   span.text-muted No puedes editar esta publicación porque tiene denuncias activas.
                 else
                   a.button.button--dark(href=`/posts/${post.id}/edit`) Editar
-                form(action=`/posts/${post.id}/delete` method="POST")
-                  button.button.button--danger(type="submit") Eliminar
+                if !isEditBlocked
+                  form(action=`/posts/${post.id}/delete` method="POST")
+                    button.button.button--danger(type="submit") Eliminar
+                else
+                  span.text-muted No puedes eliminar esta publicación porque tiene denuncias activas.
 
       aside.detail-sidebar
         .panel
