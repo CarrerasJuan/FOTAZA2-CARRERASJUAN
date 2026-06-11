@@ -184,6 +184,7 @@ const update = async (req, res, next) => {
 
         let finalAvatarUrl = avatar_url || null;
         let finalStoragePath = null;
+        const oldAvatarStoragePath = profileUser.avatar_storage_path;
 
         if (req.file) {
             if (!isSupabaseStorageConfigured()) {
@@ -224,9 +225,9 @@ const update = async (req, res, next) => {
             avatar_storage_path: finalStoragePath
         });
 
-        if (uploadedAvatar && profileUser.avatar_storage_path) {
+        if (uploadedAvatar && oldAvatarStoragePath) {
             try {
-                await removeAvatar(profileUser.avatar_storage_path);
+                await removeAvatar(oldAvatarStoragePath);
             } catch (cleanupError) {
                 console.error("No se pudo eliminar el avatar anterior:", cleanupError.message);
             }
