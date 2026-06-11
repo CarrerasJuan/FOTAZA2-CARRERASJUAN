@@ -137,10 +137,11 @@ const remove = async (req, res, next) => {
         });
 
         if (notificationLink) {
+            await notificationLink.destroy();
+
             await Notification.destroy({
                 where: { id: notificationLink.notification_id }
             });
-            await notificationLink.destroy();
         }
 
         await interest.destroy();
