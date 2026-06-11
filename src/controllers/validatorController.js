@@ -20,7 +20,7 @@ const getDashboardData = async () => {
             }
         },
         group: ["post_id"],
-        having: literal('COUNT(DISTINCT "Report"."reporter_id") > 3'),
+        having: literal('COUNT(DISTINCT "Report"."reporter_id") >= 3'),
         order: [[literal('"distinctReporters"'), "DESC"], ["post_id", "ASC"]],
         raw: true
     });
@@ -176,7 +176,7 @@ const deactivatePost = async (req, res, next) => {
 
         const distinctReporters = new Set((post.reports || []).map((report) => report.reporter_id)).size;
 
-        if (distinctReporters <= 3) {
+        if (distinctReporters < 3) {
             return res.redirect(`/validator?message=${encodeURIComponent("La publicación todavía no supera el umbral de más de 3 denunciantes distintos.")}`);
         }
 
