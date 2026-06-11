@@ -52,6 +52,7 @@ const showChat = async (req, res, next) => {
             title: "Conversación",
             interest,
             messages,
+            currentUserId: req.currentUser.id,
             isOwner: req.currentUser.id === interest.post.user_id,
             isInterested: req.currentUser.id === interest.user_id
         });
