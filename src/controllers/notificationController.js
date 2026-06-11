@@ -70,7 +70,7 @@ const index = async (req, res, next) => {
                         {
                             model: Interest,
                             as: "interest",
-                            attributes: ["id", "post_id", "created_at"],
+                            attributes: ["id", "post_id", "message", "created_at"],
                             include: [
                                 {
                                     model: Post,

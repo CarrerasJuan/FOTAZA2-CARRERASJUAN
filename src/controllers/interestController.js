@@ -65,6 +65,7 @@ const create = async (req, res, next) => {
             return res.redirect(`/posts/${post.id}?error=${encodeURIComponent("No puedes marcar interés en tu propia publicación.")}`);
         }
 
+        const message = req.body.message ? req.body.message.trim() : null;
         const now = new Date();
         const [interest, created] = await Interest.findOrCreate({
             where: {
@@ -74,9 +75,14 @@ const create = async (req, res, next) => {
             defaults: {
                 user_id: req.currentUser.id,
                 post_id: post.id,
+                message,
                 created_at: now
             }
         });
+
+        if (!created && message) {
+            await interest.update({ message });
+        }
 
         if (created && post.user_id !== req.currentUser.id) {
             const notification = await Notification.create({

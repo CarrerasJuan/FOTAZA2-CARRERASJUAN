@@ -139,8 +139,11 @@ block content
                 form(action=`/interests/${post.id}/delete` method="POST")
                   button.button.button--soft(type="submit") Quitar me interesa
               else
-                form(action="/interests" method="POST")
+                form.form-grid(action="/interests" method="POST")
                   input(type="hidden" name="post_id" value=post.id)
+                  .form-field
+                    label(for="interest-message") Mensaje (opcional)
+                    textarea#interest-message.form-textarea(name="message" rows="2" placeholder="Dejá un mensaje al autor...")
                   button.button.button--soft(type="submit") Me interesa
 
               if userCollections && userCollections.length

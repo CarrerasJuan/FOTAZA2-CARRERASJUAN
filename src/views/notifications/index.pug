@@ -50,6 +50,8 @@ block content
                     | Un usuario está interesado en tu publicación.
                 if notification.notificationInterest.interest.post
                   p.text-muted= `Publicación: ${notification.notificationInterest.interest.post.title}`
+                if notification.notificationInterest.interest.message
+                  p.feed-card__message= `Mensaje: ${notification.notificationInterest.interest.message}`
                 .inline-actions
                   if notification.actor
                     a.button.button--ghost.button--small(href=`/users/${notification.actor.id}`) Ver perfil

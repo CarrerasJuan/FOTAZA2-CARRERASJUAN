@@ -21,6 +21,8 @@ block content
               .feed-card__body
                 h2.feed-card__title= interest.post.title
                 p.text-muted= interest.post.user ? `Por ${interest.post.user.username}` : "Sin usuario"
+                if interest.message
+                  p.feed-card__message= interest.message
                 .inline-actions
                   a.button.button--ghost.button--small(href=`/posts/${interest.post.id}`) Ver publicación
                   if interest.post.user

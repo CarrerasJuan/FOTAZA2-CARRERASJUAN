@@ -18,6 +18,10 @@ const initializeInterest = (sequelize) => {
                 type: DataTypes.INTEGER,
                 allowNull: false
             },
+            message: {
+                type: DataTypes.TEXT,
+                allowNull: true
+            },
             created_at: {
                 type: DataTypes.DATE,
                 allowNull: false
