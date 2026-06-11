@@ -61,11 +61,12 @@ app.use(
         secret: process.env.SESSION_SECRET || "fotaza_session_secret",
         resave: false,
         saveUninitialized: false,
+        rolling: true,
         name: SESSION_COOKIE_NAME,
         cookie: {
             secure: process.env.NODE_ENV === "production",
             httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000
+            maxAge: 10 * 60 * 1000
         }
     })
 );
