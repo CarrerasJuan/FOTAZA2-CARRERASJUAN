@@ -13,7 +13,7 @@ block content
       form.form-grid(action="/auth/register" method="POST")
         .form-field
           label(for="username") Nombre de usuario
-          input#username.form-input(type="text" name="username" required value=values.username pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+" title="Solo letras, sin números")
+          input#username.form-input(type="text" name="username" required value=values.username pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]+" title="Solo letras (puede incluir espacios)")
 
         .form-field
           label(for="email") Correo electrónico
