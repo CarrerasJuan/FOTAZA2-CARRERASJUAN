@@ -11,8 +11,9 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const collectionRoutes = require("./routes/collectionRoutes");
 const validatorRoutes = require("./routes/validatorRoutes");
 const interestRoutes = require("./routes/interestRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 const { notFoundHandler, errorHandler } = require("./middlewares/handleErrors");
-const { sequelize, Post, User, Media, Tag } = require("./models");
+const { sequelize, Post, User, Media, Tag, Notification } = require("./models");
 const { applyMediaVisibilityToPosts } = require("./utils/mediaVisibility");
 
 const app = express();
@@ -101,6 +102,16 @@ app.use(async (req, res, next) => {
 
         req.currentUser = currentUser;
         res.locals.sessionUser = currentUser;
+
+        // Contar notificaciones no leídas
+        const unreadCount = await Notification.count({
+            where: {
+                user_id: currentUser.id,
+                is_read: false
+            }
+        });
+        res.locals.unreadNotifications = unreadCount;
+
         return next();
     } catch (error) {
         return next(error);
@@ -180,6 +191,7 @@ app.use("/notifications", notificationRoutes);
 app.use("/collections", collectionRoutes);
 app.use("/validator", validatorRoutes);
 app.use("/interests", interestRoutes);
+app.use("/interests", messageRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 

@@ -17,6 +17,7 @@ const { NotificationRating, initializeNotificationRating } = require("./Notifica
 const { NotificationFollow, initializeNotificationFollow } = require("./NotificationFollow");
 const { NotificationInterest, initializeNotificationInterest } = require("./NotificationInterest");
 const { NotificationReport, initializeNotificationReport } = require("./NotificationReport");
+const { Message, initializeMessage } = require("./Message");
 
 const initializeModels = () => {
     if (!User.sequelize) {
@@ -89,6 +90,10 @@ const initializeModels = () => {
 
     if (!NotificationReport.sequelize) {
         initializeNotificationReport(sequelize);
+    }
+
+    if (!Message.sequelize) {
+        initializeMessage(sequelize);
     }
 
     User.hasMany(Post, {
@@ -415,6 +420,26 @@ const initializeModels = () => {
         as: "report"
     });
 
+    Interest.hasMany(Message, {
+        foreignKey: "interest_id",
+        as: "messages"
+    });
+
+    Message.belongsTo(Interest, {
+        foreignKey: "interest_id",
+        as: "interest"
+    });
+
+    User.hasMany(Message, {
+        foreignKey: "sender_id",
+        as: "messagesSent"
+    });
+
+    Message.belongsTo(User, {
+        foreignKey: "sender_id",
+        as: "sender"
+    });
+
     return {
         sequelize,
         User,
@@ -434,7 +459,8 @@ const initializeModels = () => {
         NotificationRating,
         NotificationFollow,
         NotificationInterest,
-        NotificationReport
+        NotificationReport,
+        Message
     };
 };
 

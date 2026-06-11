@@ -36,7 +36,10 @@ header.navbar
             a.navbar__account-link(href=`/users/${sessionUser.id}`) Mi perfil
             a.navbar__account-link(href="/interests") Mis intereses
             a.navbar__account-link(href="/posts/following") Seguidos
-            a.navbar__account-link(href="/notifications") Notificaciones
+            a.navbar__account-link(href="/notifications")
+              | Notificaciones
+              if typeof unreadNotifications !== "undefined" && unreadNotifications > 0
+                span.navbar__badge= unreadNotifications
             if sessionUser.role === "validator"
               a.navbar__account-link(href="/validator") Validador
             form.navbar__account-logout(action="/auth/logout" method="POST")

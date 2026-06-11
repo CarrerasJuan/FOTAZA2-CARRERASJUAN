@@ -1,0 +1,35 @@
+extends ../layouts/main
+
+block content
+  section.page-section
+    .panel
+      span.section-eyebrow Conversación
+      h1= interest.post ? interest.post.title : "Chat"
+      p.text-muted
+        if isOwner
+          | Hablando con el usuario interesado
+        else
+          | Hablando con el autor de la publicación
+      .inline-actions
+        a.button.button--ghost(href="/interests") Volver a intereses
+        if interest.post
+          a.button.button--ghost(href=`/posts/${interest.post.id}`) Ver publicación
+
+  section.page-section
+    .chat-box
+      if messages.length
+        each message in messages
+          .chat-message(class=message.sender_id === req.currentUser.id ? "chat-message--sent" : "chat-message--received")
+            .chat-message__sender= message.sender ? message.sender.username : "Usuario"
+            .chat-message__content= message.content
+            .chat-message__time
+              - const date = new Date(message.created_at)
+              | #{date.toLocaleDateString()} #{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      else
+        .empty-state
+          p Sin mensajes todavía. Escribí el primero para contactar al usuario.
+
+    form.chat-form(action=`/interests/${interest.id}/chat` method="POST")
+      .form-field
+        textarea#chat-input.form-textarea(name="content" rows="2" placeholder="Escribí un mensaje..." required)
+      button.button.button--dark(type="submit") Enviar

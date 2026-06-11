@@ -57,6 +57,7 @@ block content
                     a.button.button--ghost.button--small(href=`/users/${notification.actor.id}`) Ver perfil
                   if notification.notificationInterest.interest.post_id
                     a.button.button--ghost.button--small(href=`/posts/${notification.notificationInterest.interest.post_id}`) Ver publicación
+                  a.button.button--soft.button--small(href=`/interests/${notification.notificationInterest.interest.id}/chat`) Responder
 
               unless notification.is_read
                 form(action=`/notifications/${notification.id}/read` method="POST")

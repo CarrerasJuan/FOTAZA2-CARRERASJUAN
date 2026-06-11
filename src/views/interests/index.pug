@@ -25,6 +25,7 @@ block content
                   p.feed-card__message= interest.message
                 .inline-actions
                   a.button.button--ghost.button--small(href=`/posts/${interest.post.id}`) Ver publicación
+                  a.button.button--soft.button--small(href=`/interests/${interest.id}/chat`) Chat
                   if interest.post.user
                     a.button.button--soft.button--small(href=`/users/${interest.post.user.id}`) Ver perfil del autor
     else
